@@ -55,4 +55,9 @@ export {
 export { renderBook, renderMermaidDiagram } from "./renderer.js";
 
 // Converter
-export { convertToPdf, isPandocAvailable } from "./converter.js";
+export {
+  convertToPdf,
+  isPandocAvailable,
+  ConverterError,
+  PandocNotFoundError,
+} from "./converter.js";
