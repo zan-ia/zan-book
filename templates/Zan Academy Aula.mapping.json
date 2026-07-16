@@ -1,7 +1,7 @@
 {
-  "id": "Padrão A4",
-  "name": "Padrão A4",
-  "docx_path": "templates/sample-template.docx",
+  "id": "Zan Academy Aula",
+  "name": "Zan Academy Aula",
+  "docx_path": "templates/template-aula.pptx",
   "layout": [
     {
       "kind": "cover",
@@ -41,7 +41,8 @@
     "image_caption": "Caption",
     "objectives": "List Bullet",
     "questions_title": "Heading 2",
-    "questions_body": "Body Text"
+    "questions_body": "Body Text",
+    "_theme": "{\"majorFont\":\"Calibri Light\",\"minorFont\":\"Calibri\",\"colors\":{\"dk2\":\"#44546A\",\"lt2\":\"#E7E6E6\",\"accent1\":\"#4472C4\",\"accent2\":\"#ED7D31\",\"accent3\":\"#A5A5A5\",\"accent4\":\"#FFC000\",\"accent5\":\"#5B9BD5\",\"accent6\":\"#70AD47\",\"hlink\":\"#0563C1\",\"folHlink\":\"#954F72\"}}"
   },
   "annotation_styles": {
     "quick_check": "Callout",

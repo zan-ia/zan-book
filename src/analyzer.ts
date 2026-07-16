@@ -1,9 +1,11 @@
 /**
- * Analyzer module — DOCX template → TemplateMapping.
+ * Analyzer module — DOCX/PPTX template → TemplateMapping.
  *
- * Opens a DOCX file, lists its named styles, and produces
- * a TemplateMapping that tells the renderer which DOCX style
- * to apply to each markdown element.
+ * Opens a DOCX or PPTX file and produces a TemplateMapping that
+ * tells the renderer which DOCX style to apply to each markdown element.
+ *
+ * For DOCX: reads named styles via JSZip + XML parsing.
+ * For PPTX: extracts theme info (fonts, colors) to create matching DOCX styles.
  *
  * Two modes:
  * - Auto (default): Reads style names from the DOCX and applies
@@ -447,6 +449,13 @@ function fillDefaults(
  * @returns A validated TemplateMapping
  */
 export async function analyzeTemplate(docxPath: string): Promise<TemplateMapping> {
+  const ext = extname(docxPath).toLowerCase();
+
+  if (ext === ".pptx") {
+    return analyzePptxTemplate(docxPath);
+  }
+
+  // Default: DOCX analysis
   const buffer = await readFile(docxPath);
   const styles = await readDocxStyles(buffer);
 
@@ -480,6 +489,99 @@ export async function analyzeTemplate(docxPath: string): Promise<TemplateMapping
     annotation_styles: annotationMap,
     page_size: pageSize,
     margins,
+  };
+}
+
+// ─── PPTX Theme Extraction ─────────────────────────────────────────────────
+
+/**
+ * Extract visual theme from a PPTX file and produce a TemplateMapping.
+ *
+ * Reads the theme XML (fonts, colors) and creates a default style mapping
+ * that the renderer can use to style the output DOCX.
+ */
+async function analyzePptxTemplate(pptxPath: string): Promise<TemplateMapping> {
+  const buffer = await readFile(pptxPath);
+  const zip = await JSZip.loadAsync(buffer);
+
+  // Extract font info from theme
+  const themeFile = zip.file("ppt/theme/theme1.xml");
+  let majorFont = "Calibri Light";
+  let minorFont = "Calibri";
+  const colors: Record<string, string> = {};
+
+  if (themeFile) {
+    const themeXml = await themeFile.async("string");
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_",
+    });
+    const parsed = parser.parse(themeXml);
+
+    // Font scheme
+    const fontScheme = parsed?.["a:theme"]?.["a:themeElements"]?.["a:fontScheme"];
+    if (fontScheme) {
+      const major = fontScheme["a:majorFont"]?.["a:latin"]?.["@_typeface"];
+      const minor = fontScheme["a:minorFont"]?.["a:latin"]?.["@_typeface"];
+      if (major) majorFont = major;
+      if (minor) minorFont = minor;
+    }
+
+    // Color scheme
+    const clrScheme = parsed?.["a:theme"]?.["a:themeElements"]?.["a:clrScheme"];
+    if (clrScheme) {
+      const colorMap: Record<string, string> = {
+        "a:dk1": "dk1",
+        "a:lt1": "lt1",
+        "a:dk2": "dk2",
+        "a:lt2": "lt2",
+        "a:accent1": "accent1",
+        "a:accent2": "accent2",
+        "a:accent3": "accent3",
+        "a:accent4": "accent4",
+        "a:accent5": "accent5",
+        "a:accent6": "accent6",
+        "a:hlink": "hlink",
+        "a:folHlink": "folHlink",
+      };
+
+      for (const [tag, key] of Object.entries(colorMap)) {
+        const el = clrScheme[tag];
+        if (el) {
+          const srgb = el["a:srgbClr"]?.["@_val"];
+          if (srgb) colors[key] = `#${srgb}`;
+        }
+      }
+    }
+  }
+
+  const templateId = basename(pptxPath, extname(pptxPath));
+
+  console.log(`  Font: heading="${majorFont}", body="${minorFont}"`);
+  if (Object.keys(colors).length > 0) {
+    const c = colors;
+    console.log(
+      `  Colors: ${c.accent1 ?? ""} ${c.accent2 ?? ""} ${c.accent3 ?? ""}`,
+    );
+  }
+
+  return {
+    id: templateId,
+    name: templateId,
+    docx_path: pptxPath,
+    layout: defaultLayout(),
+    styles: {
+      ...DEFAULT_STYLE_MAP,
+      // Override with PPTX theme fonts
+      _theme: JSON.stringify({
+        majorFont,
+        minorFont,
+        colors,
+      }),
+    },
+    annotation_styles: { ...DEFAULT_ANNOTATION_MAP },
+    page_size: "A4",
+    margins: {},
   };
 }
 
