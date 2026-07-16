@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Fulfilled: Operacao concluida com sucesso
+    Pending --> Rejected: Ocorreu um erro
+    Fulfilled --> [*]
+    Rejected --> [*]
+    note right of Pending: Estado inicial<br/>Resultado ainda nao disponivel
+    note right of Fulfilled: Valor disponivel<br/>Irreversivel
+    note right of Rejected: Motivo do erro disponivel<br/>Irreversivel

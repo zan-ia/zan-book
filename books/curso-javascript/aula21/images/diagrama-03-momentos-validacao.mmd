@@ -1,0 +1,15 @@
+flowchart TD
+    A[Campo recebe foco] --> B[Usuario digita]
+    B --> C{Validacao ao digitar?}
+    C -->|Sim| D[Feedback em tempo real]
+    D --> B
+    C -->|Nao| E[Campo perde o foco]
+    E --> F{Validacao de formato}
+    F -->|Invalido| G[Mostrar erro no campo]
+    F -->|Valido| H[Aguardar submit]
+    G --> H
+    H --> I{Submit}
+    I --> J{Validacao completa}
+    J -->|Invalido| K[Mostrar todos os erros]
+    K --> B
+    J -->|Valido| L[Processar dados]

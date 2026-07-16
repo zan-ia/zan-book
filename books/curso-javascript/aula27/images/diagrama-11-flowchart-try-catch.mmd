@@ -1,0 +1,15 @@
+flowchart TD
+    subgraph A[Abordagem A: Um try catch]
+        A1[try] --> A2[buscarFrases]
+        A2 --> A3[processarFrases]
+        A3 --> A4[salvarFrases]
+        A1 --> A5[catch generico]
+    end
+
+    subgraph C[Abordagem C: Grupo logico RECOMENDADO]
+        C1[try grupo buscar e salvar] --> C2[buscarFrases]
+        C2 --> C3[processarFrases]
+        C3 --> C4[salvarFrases]
+        C1 --> C5[catch grupo]
+        C1 --> C6[finally esconderSpinner]
+    end

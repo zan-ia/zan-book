@@ -1,0 +1,17 @@
+flowchart LR
+    subgraph Polling
+        P1[Loop a cada 100ms] --> P2[Verifica condicao]
+        P2 -->|Nao mudou| P1
+        P2 -->|Mudou| P3[Processa]
+        P3 --> P1
+    end
+    subgraph Eventos
+        E1[Registra listener] --> E2[Aguardando]
+        E2 -->|Usuario age| E3[Processa evento]
+        E3 --> E2
+    end
+    subgraph Observers
+        O1[Registra observer] --> O2[Ocioso]
+        O2 -->|Sistema detecta| O3[Callback executa]
+        O3 --> O2
+    end

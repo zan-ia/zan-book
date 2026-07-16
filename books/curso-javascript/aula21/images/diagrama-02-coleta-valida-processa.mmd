@@ -1,0 +1,7 @@
+flowchart LR
+    A[Usuario preenche campos] --> B[Dados sao coletados]
+    B --> C{Validacao}
+    C -->|Dados validos| D[Processamento]
+    C -->|Dados invalidos| E[Feedback de erro]
+    E --> A
+    D --> F[Resposta ou confirmacao]

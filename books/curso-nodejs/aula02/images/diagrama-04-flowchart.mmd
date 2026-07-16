@@ -1,0 +1,10 @@
+flowchart TD
+    P["Seu Projeto"] --> A["Pacote A<br/>(direta)"]
+    P --> B["Pacote B<br/>(direta)"]
+    A --> A1["Pacote A.1<br/>(transitória)"]
+    A --> A2["Pacote A.2<br/>(transitória)"]
+    B --> B1["Pacote B.1<br/>(transitória)"]
+    A1 --> A1a["Pacote A.1.a<br/>(transitória)"]
+    style P fill:#4a90d9,color:#fff
+    style A fill:#e67e22,color:#fff
+    style B fill:#e67e22,color:#fff

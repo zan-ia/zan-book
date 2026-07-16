@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant T as Teste Playwright
+    participant B as Navegador
+    participant F as Frontend React
+    participant API as Backend Express
+    participant DB as Banco SQLite
+
+    T->>B: Abre navegador
+    T->>B: Navega para /criar
+    B->>F: Renderiza formulario
+    T->>B: Preenche nome e descricao
+    T->>B: Clica em Salvar
+    B->>F: Dispara evento submit
+    F->>API: POST /api/projects
+    API->>DB: INSERT project
+    DB-->>API: project created
+    API-->>F: 201 + project data
+    F-->>B: Redireciona para /projetos/:id
+    B-->>T: Pagina carregada
+    T->>B: Verifica titulo do projeto
+    T->>B: Fecha navegador

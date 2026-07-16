@@ -1,0 +1,7 @@
+flowchart LR
+    U[Usuário] --> A{Autenticação}
+    A -->|Quem é você| I[Identidade Verificada]
+    I --> B{Autorização}
+    B -->|O que pode fazer| P[Permissões]
+    P --> R[Recurso Liberado]
+    B -->|Acesso negado| N[403 Proibido]

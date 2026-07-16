@@ -1,0 +1,7 @@
+flowchart TD
+    Q[Quantos registros] -->|Poucos menos de 100| GA[getAll: simples e direto]
+    Q -->|Muitos centenas ou mais| C[cursor: processamento incremental]
+    GA --> R[Array completo na memoria]
+    C --> P[Um registro por vez]
+    P -->|continue| Proximo[Proximo registro]
+    P -->|null| Fim[Fim da iteracao]

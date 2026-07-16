@@ -1,0 +1,12 @@
+flowchart TD
+    LOAD["carregarTarefas()"]
+    CHECK{"tarefas.json existe?"}
+    LOAD --> CHECK
+    CHECK -->|"Sim"| READ["Lê arquivo com readFileSync"]
+    READ --> PARSE["Faz JSON.parse"]
+    PARSE --> RET["Retorna array de tarefas"]
+    CHECK -->|"Não"| EMPTY["Retorna array vazio []"]
+    SAVE["salvarTarefas(tarefas)"]
+    STRINGIFY["Faz JSON.stringify com indentação"]
+    SAVE --> STRINGIFY
+    STRINGIFY --> WRITE["Escreve no disco com writeFileSync"]

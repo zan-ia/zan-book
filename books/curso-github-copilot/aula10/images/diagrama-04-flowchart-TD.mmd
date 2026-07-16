@@ -1,0 +1,13 @@
+flowchart TD
+    A[MCP conectado] --> B{Usou na ultima sessao?}
+    B -->|Sim| C{Usou mais de 3x?}
+    B -->|Nao| D{Eh setup rapido?}
+    C -->|Sim| E[MANTENHA]
+    C -->|Nao| F{Merece os tokens?}
+    D -->|Sim| G[REMOVA - reconecte quando precisar]
+    D -->|Nao| H[AVALIE se vale manter]
+    F -->|Sim| E
+    F -->|Nao| G
+    H --> I{Custo justificado?}
+    I -->|Sim| E
+    I -->|Nao| G

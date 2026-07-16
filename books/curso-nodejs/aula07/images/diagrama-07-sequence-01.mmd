@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant C as Cliente
+    participant E as express.json
+    participant H as Handler POST
+    participant R as Resposta
+    C->>E: POST /tarefas<br>Content-Type: application/json<br>{"titulo": "Estudar"}
+    Note over E: Parseia JSON do body<br>disponibiliza em req.body
+    E->>H: req.body = { titulo: "Estudar" }
+    H->>H: Valida, cria tarefa
+    H->>R: res.status(201).json(nova)
+    R->>C: 201 Created<br>{"id": 1, "titulo": "Estudar"}

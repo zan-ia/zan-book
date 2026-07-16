@@ -1,0 +1,8 @@
+flowchart LR
+    A[Cliente<br>Pagina Web] -->|Pedido<br>Request| B[Garc<br>Service Worker]
+    B -->|Tem no cache?| C{Decisao}
+    C -->|Sim| D[Despensa<br>Cache]
+    C -->|Nao| E[Cozinha<br>Rede]
+    D -->|Serve do cache| A
+    E -->|Prepara e serve| A
+    E -->|Falhou offline| D

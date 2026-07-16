@@ -1,0 +1,5 @@
+flowchart LR
+    REQ["Requisição<br>GET /tarefas/5"] --> MATCH{"Match com<br>/tarefas/:id?"}
+    MATCH -->|"Sim"| PARAMS["Extrai :id = '5'"]
+    PARAMS --> POPULATE["Popula req.params<br>{ id: '5' }"]
+    POPULATE --> HANDLER["Handler executado<br>req.params.id disponível"]

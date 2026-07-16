@@ -31,6 +31,14 @@ export type {
 
 // Extractor
 export { extractBook, extractLesson } from "./extractor.js";
+export type { ExtractionOptions, BookResult, LessonResult } from "./extractor.js";
+
+// Cache
+export { CacheManager } from "./cache.js";
+
+// LLM Provider
+export { createLlmProvider, LlmConfigurationError, LlmExtractionError } from "./llm.js";
+export type { LlmProvider, LlmProviderConfig, BookMetadata } from "./llm.js";
 
 // Analyzer
 export { analyzeTemplate, analyzeTemplateWithAI } from "./analyzer.js";

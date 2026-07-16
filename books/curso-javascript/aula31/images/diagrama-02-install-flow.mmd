@@ -1,0 +1,10 @@
+flowchart LR
+  A[Navegador detecta PWA] --> B[Dispara beforeinstallprompt]
+  B --> C[Guarda evento na variavel]
+  C --> D[Mostra botao Instalar App]
+  D --> E[Usuario clica no botao]
+  E --> F[Chama prompt do evento guardado]
+  F --> G[Usuario escolhe Instalar ou Cancelar]
+  G --> H{Resultado}
+  H -- Instalado --> I[App aparece na tela inicial]
+  H -- Cancelado --> J[Aguardar proxima interacao]

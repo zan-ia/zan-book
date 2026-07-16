@@ -1,0 +1,7 @@
+flowchart TD
+    R[Registrar me avise quando X mudar] --> A[Aguardar]
+    A --> N[Sistema detecta mudanca]
+    N --> C[Callback executado]
+    C --> A
+    A --> L[Limpar pare de me avisar]
+    L --> F[Fim]

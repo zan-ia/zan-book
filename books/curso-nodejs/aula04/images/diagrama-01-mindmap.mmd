@@ -1,0 +1,43 @@
+mindmap
+  root((Sistema de Arquivos fs))
+    Fundamentos
+      IO
+        RAM volátil
+        Disco persistente
+        Analogia mesa e gaveta
+      Modelos de Execução
+        Síncrono bloqueante
+        Assíncrono não bloqueante
+        Delegação ao SO
+      Buffer e Encoding
+        Disco armazena bytes
+        UTF-8 universal
+        Buffer como caixa d água
+      Callback
+        Contrato avise quando terminar
+        Single thread
+        Event loop
+    Aplicação fs
+      Operações Síncronas
+        readFileSync
+        writeFileSync
+        Quando usar
+      Callbacks Assíncronos
+        readFile com callback
+        writeFile com callback
+        Error-first Pattern
+        err data
+      fs promises
+        readFile retorna Promise
+        writeFile retorna Promise
+        async await try catch
+      JSON e Diretórios
+        JSON parse e stringify
+        existsSync
+        mkdirSync recursive
+        dirname e filename
+      Projeto
+        Gerenciador de Tarefas
+        carregarTarefas
+        salvarTarefas
+        tarefas json

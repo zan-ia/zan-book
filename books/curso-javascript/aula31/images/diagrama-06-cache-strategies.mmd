@@ -1,0 +1,17 @@
+flowchart LR
+  subgraph Cache First
+    A1[Requisição] --> B1[Cache]
+    B1 -- Achou --> C1[Retorna do cache]
+    B1 -- Nao achou --> D1[Rede]
+    D1 --> E1[Guarda no cache]
+    E1 --> F1[Retorna]
+  end
+
+  subgraph Network First
+    A2[Requisição] --> B2[Rede]
+    B2 -- Online --> C2[Guarda no cache]
+    C2 --> D2[Retorna]
+    B2 -- Offline --> E2[Cache]
+    E2 -- Achou --> F2[Retorna do cache]
+    E2 -- Nao achou --> G2[Mensagem offline]
+  end

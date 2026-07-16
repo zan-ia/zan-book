@@ -1,0 +1,7 @@
+flowchart LR
+    REQ["Requisição<br>GET /tarefas"] --> TABLE["Tabela de Roteamento"]
+    TABLE --> MATCH{"Match?"}
+    MATCH -->|"GET /tarefas → handlerListar"| H1["Handler executado"]
+    MATCH -->|"POST /tarefas → handlerCriar"| H2["Handler executado"]
+    MATCH -->|"GET /tarefas/:id → handlerBuscar"| H3["Handler executado"]
+    MATCH -->|"Sem match"| NF["404 — Not Found"]

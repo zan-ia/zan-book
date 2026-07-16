@@ -1,0 +1,8 @@
+flowchart LR
+    REQ["Requisição POST<br>com JSON body"] --> EJ["express.json"]
+    EJ --> READ["Lê a stream<br>req.on(data)"]
+    READ --> ACC["Acumula chunks"]
+    ACC --> PARSE["JSON.parse"]
+    PARSE --> BODY["req.body = obj"]
+    BODY --> NEXT["next()"]
+    NEXT --> ROTA["Rota POST"]

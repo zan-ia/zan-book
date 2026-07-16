@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant U as Usuario
+    participant S as Sentinela
+    participant O as IntersectionObserver
+    participant G as Gerenciador
+    participant DB as IndexedDB
+
+    U->>U: Rola a pagina
+    U->>S: Sentinela entra na viewport
+    S->>O: isIntersecting true
+    O->>G: Callback executado
+    G->>DB: getAll com offset e limit 15
+    DB-->>G: Proximo lote de tarefas
+    G->>G: Renderiza novas tarefas
+    G->>S: Move sentinela para o fim

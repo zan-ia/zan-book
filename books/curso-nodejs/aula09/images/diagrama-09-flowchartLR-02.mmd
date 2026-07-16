@@ -1,0 +1,12 @@
+flowchart LR
+    subgraph ANTES[Antes]
+        A[Handler async] --> B[throw Error]
+        B --> C[Promise rejeitada]
+        C --> D[Servidor crasha]
+    end
+    subgraph DEPOIS[Depois]
+        E[Handler async] --> F[try catch]
+        F --> G[next err]
+        G --> H[Middleware de erro]
+        H --> I[Resposta controlada]
+    end

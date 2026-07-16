@@ -1,0 +1,20 @@
+flowchart TD
+    subgraph Entrada
+        A[Issue no GitHub] --> B[GitHub MCP le a issue]
+    end
+    subgraph Orquestracao
+        B --> C[Agent Mode executa o plano]
+        C --> D[Subagentes em paralelo]
+    end
+    subgraph Ferramentas
+        E[Skills de Documentacao] --> C
+        F[MCPs de Frontend] --> C
+        G[CI/CD Pipeline] --> D
+    end
+    subgraph Saida
+        D --> H[PR revisado e testado]
+        H --> I[CI/CD valida]
+        I --> J[Merge e Deploy]
+        J --> K[Metricas e Refine]
+    end
+    K -.-> B

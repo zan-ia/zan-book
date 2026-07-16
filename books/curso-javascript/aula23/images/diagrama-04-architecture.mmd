@@ -1,0 +1,6 @@
+flowchart TD
+    DB[IDBDatabase gerenciador-db] --> S1[IDBObjectStore tarefas]
+    S1 --> I1[IDBIndex status]
+    S1 --> I2[IDBIndex dataCriacao]
+    DB --> S2[IDBObjectStore configuracoes]
+    S2 --> I3[IDBIndex chave]

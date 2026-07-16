@@ -1,0 +1,11 @@
+flowchart TD
+    subgraph Pipeline
+        A[Commit] --> B[Instalar Dependencias]
+        B --> C[Iniciar Playwright MCP]
+        C --> D[Executar Testes]
+        D --> E{Capturar Traces}
+        E -->|Sucesso| F[Upload Traces como Artefatos]
+        E -->|Falha| G[Analisar Trace]
+        G --> H[Publicar Feedback]
+        H --> A
+    end

@@ -1,0 +1,14 @@
+flowchart TD
+    subgraph Síncrono
+        A1["Início"] --> A2["Solicita leitura"]
+        A2 --> A3["PROGRAMA BLOQUEADO"]
+        A3 --> A4["Disco retorna dados"]
+        A4 --> A5["Continua execução"]
+    end
+    subgraph Assíncrono
+        B1["Início"] --> B2["Solicita leitura"]
+        B2 --> B3["Continua execução"]
+        B2 -.-> B4["SO processa em paralelo"]
+        B4 -.-> B5["Callback na fila"]
+        B5 --> B6["Callback executa"]
+    end

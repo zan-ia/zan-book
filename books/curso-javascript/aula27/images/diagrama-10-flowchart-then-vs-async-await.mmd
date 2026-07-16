@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph then[Then Catch]
+        T1[fetch url] --> T2[then verifica ok]
+        T2 --> T3[then extrai json]
+        T3 --> T4[then exibe dados]
+        T2 -.->|erro| T5[catch]
+        T3 -.->|erro| T5
+    end
+
+    subgraph async[Async Await]
+        A1[const res = await fetch url] --> A2[verifica ok]
+        A2 --> A3[const dados = await res.json]
+        A3 --> A4[console.log dados]
+        A2 -.->|erro| A5[catch]
+        A3 -.->|erro| A5
+    end

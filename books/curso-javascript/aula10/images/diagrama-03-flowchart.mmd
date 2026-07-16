@@ -1,0 +1,9 @@
+flowchart LR
+    subgraph SEM[Sem funcao - repeticoao]
+        A1[8 passos] --> A2[8 passos] --> A3[8 passos]
+    end
+    subgraph COM[Com funcao - reutilizacaoo]
+        B1[Receita central] --> B2[Chamar receita]
+        B1 --> B3[Chamar receita]
+        B1 --> B4[Chamar receita]
+    end

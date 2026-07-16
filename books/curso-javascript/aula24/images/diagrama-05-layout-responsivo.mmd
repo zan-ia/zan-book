@@ -1,0 +1,5 @@
+flowchart TD
+    O[ResizeObserver observa o container] --> L[contentRect.width muda]
+    L --> P{Largura maior que 600px}
+    P -->|Sim| G[Adiciona classe grid]
+    P -->|Nao| C[Remove classe grid usa lista]

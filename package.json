@@ -33,14 +33,17 @@
     "commander": "^12.1.0",
     "docx": "^8.5.0",
     "execa": "^9.3.0",
+    "js-yaml": "^5.2.1",
     "openai": "^4.52.0",
     "remark-frontmatter": "^5.0.0",
     "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
     "unified": "^11.0.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.14.0",
     "eslint": "^9.8.0",
     "prettier": "^3.3.3",

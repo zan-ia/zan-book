@@ -1,0 +1,5 @@
+flowchart LR
+    A[Chefe] -->|delega tarefa| B[Trabalhador]
+    B -->|executa| C[Resultado]
+    C -->|callback: terminei| A
+    A -->|recebe notificacao| D[Proximo passo]

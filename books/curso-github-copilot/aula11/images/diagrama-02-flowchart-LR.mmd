@@ -1,0 +1,8 @@
+flowchart LR
+    A[Issue: tarefa registrada] --> B[Branch: codigo escrito]
+    B --> C[PR: proposta de mudanca]
+    C --> D[CI/CD: automacao valida]
+    D --> E[Code Review: par revisa]
+    E --> F[Merge: codigo integrado]
+    F --> G[Release: versao publicada]
+    G -.-> A

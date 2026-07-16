@@ -1,0 +1,5 @@
+flowchart LR
+    CMD["node app.js --arquivo=dados.json --verbose"] --> PARSE["Parsing de argumentos"]
+    PARSE --> ARGS["{ arquivo: 'dados.json', verbose: true }"]
+    PARSE --> POS["Posicionais: ['app.js']"]
+    ARGS --> USE["Programa usa config"]

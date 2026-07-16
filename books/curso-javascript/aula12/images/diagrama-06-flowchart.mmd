@@ -1,0 +1,7 @@
+flowchart TD
+    A[Precisa acessar propriedade] --> B{Chave conhecida}
+    B -->|Sim| C{Chave valida}
+    B -->|Nao| F[Usar bracket notation]
+    C -->|Identificador valido| D[Dot notation]
+    C -->|Tem espacos ou especiais| F
+    C -->|Variavel contém o nome| F

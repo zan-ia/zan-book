@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Codigo as Seu Codigo
+    participant JS as JavaScript Engine
+    participant Objeto as Novo Objeto
+    
+    Codigo->>JS: new Tarefa("Estudar")
+    JS->>Objeto: 1. Cria objeto vazio {}
+    JS->>Objeto: 2. Define prototype = Tarefa.prototype
+    JS->>Objeto: 3. Executa constructor com this = objeto
+    Objeto->>Objeto: this.id = Date.now()
+    Objeto->>Objeto: this.texto = "Estudar"
+    Objeto->>Objeto: this.concluida = false
+    JS-->>Codigo: 4. Retorna o objeto completo

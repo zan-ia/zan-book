@@ -1,0 +1,8 @@
+flowchart LR
+    subgraph Fila
+        P1[Pessoa 1] --> P2[Pessoa 2] --> P3[Pessoa 3]
+    end
+    PUSH[push: entra no fim] -.-> P3
+    POP[pop: sai do fim] -.-> P3
+    UNSHIFT[unshift: entra na frente] -.-> P1
+    SHIFT[shift: sai da frente] -.-> P1

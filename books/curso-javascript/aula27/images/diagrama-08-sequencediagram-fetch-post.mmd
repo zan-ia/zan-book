@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant N as Navegador
+    participant S as Servidor API
+    N->>N: JSON.stringify({ title, completed })
+    N->>S: POST /posts<br/>Content-Type: application/json<br/>Body: { title, completed }
+    Note over N: fetch() retorna Promise pending
+    S-->>N: 201 Created + JSON com id
+    Note over N: Promise fulfilled<br/>resposta.ok = true
+    N->>N: res.json() extrai o corpo

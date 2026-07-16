@@ -1,0 +1,13 @@
+erDiagram
+    USUARIO ||--o{ TAREFA : "tem muitas"
+    USUARIO {
+        int id
+        string nome
+        string email
+    }
+    TAREFA {
+        int id
+        string titulo
+        boolean concluida
+        int user_id
+    }

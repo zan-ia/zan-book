@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Cliente
+    participant req as Objeto req
+    participant Codigo as Seu Codigo
+    Cliente->>req: POST /api/mensagem
+    Note over req: Body chega em pedacos
+    req-->>Codigo: data: chunk 1
+    req-->>Codigo: data: chunk 2
+    req->>Codigo: end: body completo
+    Codigo->>Codigo: JSON.parse(body)
+    Codigo->>Cliente: Response 200

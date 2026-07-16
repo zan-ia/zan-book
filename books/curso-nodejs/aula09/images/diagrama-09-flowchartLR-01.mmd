@@ -1,0 +1,12 @@
+flowchart LR
+    subgraph Sem[Sem Fail Fast]
+        A1[Requisição inválida] --> B1[Processa mesmo assim]
+        B1 --> C1[Acessa armazenamento]
+        C1 --> D1[Erro em cascata]
+        D1 --> E1[Resposta 500 genérica]
+    end
+    subgraph Com[Com Fail Fast]
+        A2[Requisição inválida] --> B2[Valida imediatamente]
+        B2 --> C2[Recusa com 400 explicativo]
+        C2 --> D2[Resposta clara e rápida]
+    end

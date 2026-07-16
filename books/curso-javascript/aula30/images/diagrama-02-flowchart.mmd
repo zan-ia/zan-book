@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph Monolito
+        G1[Gaveta Unica] --- C1[Talheres + Temperos + Panos + Contas + Pilhas]
+    end
+    subgraph Modular
+        G2[Gaveta 1 Talheres] --- T[Garfos Facas Colheres]
+        G3[Gaveta 2 Temperos] --- P[Sal Pimenta Oregano]
+        G4[Gaveta 3 Utensilios] --- M[Xicaras Colheres Medida]
+    end
+    Monolito -->|caos| Modular

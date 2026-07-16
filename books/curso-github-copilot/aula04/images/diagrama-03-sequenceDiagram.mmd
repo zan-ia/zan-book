@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant AgenteA as Agente A
+    participant ADR as ADR no repositorio
+    participant AgenteB as Agente B
+    participant Projeto as Projeto
+
+    AgenteA->>Projeto: Implementa feature X
+    AgenteA->>ADR: 1. Documenta decisoes em ADR
+    AgenteA->>AgenteA: 2. Fecha sessao (historico descartado)
+    AgenteA->>AgenteB: 3. Novo agente le ADR
+    AgenteB->>ADR: Le ADR-001 e ADR-002
+    AgenteB->>Projeto: Le instrucoes do projeto
+    AgenteB->>Projeto: 4. Executa feature Y com contexto limpo
+    Note over AgenteB: Nao ve historico do Agente A<br/>Ve apenas artefatos versionados

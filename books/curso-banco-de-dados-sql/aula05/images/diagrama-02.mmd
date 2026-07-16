@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph Aplicacao["Aplicação"]
+        R1[Requisição 1]
+        R2[Requisição 2]
+        R3[Requisição 3]
+    end
+    subgraph Pool["Connection Pool"]
+        C1[(Conexão 1)]
+        C2[(Conexão 2)]
+        C3[(Conexão 3)]
+    end
+    subgraph Banco["Banco Servidor"]
+        DB[(Banco)]
+    end
+    R1 --> C1
+    R2 --> C2
+    R3 --> C3
+    C1 --> DB
+    C2 --> DB
+    C3 --> DB

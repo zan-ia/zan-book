@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph Sintaxe
+        A["{"] --> B["chave: valor,"]
+        B --> C["chave: valor,"]
+        C --> D["chave: valor"]
+        D --> E["}"]
+    end
+    subgraph Exemplo
+        F["{"] --> G["nome: Ana,"]
+        G --> H["idade: 28,"]
+        H --> I["email: ana@email.com"]
+        I --> J["}"]
+    end

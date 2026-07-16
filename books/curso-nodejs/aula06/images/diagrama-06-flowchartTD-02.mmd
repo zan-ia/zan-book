@@ -1,0 +1,11 @@
+flowchart TD
+    REQ["Requisição"] --> DECIDE{"method + url"}
+    DECIDE -->|"GET /tarefas"| LIST["listarTarefas()"]
+    LIST --> JSON1["200 JSON"]
+    DECIDE -->|"POST /tarefas"| BODY["Ler body (data/end)"]
+    BODY --> PARSE["JSON.parse(body)"]
+    PARSE --> VALID{"tem titulo?"}
+    VALID -->|"sim"| ADD["adicionarTarefa(titulo)"]
+    ADD --> JSON2["201 JSON"]
+    VALID -->|"não"| ERRO["400 JSON"]
+    DECIDE -->|"outro"| NF["404 JSON"]

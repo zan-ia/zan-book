@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant P as Pagina (Thread Principal)
+    participant W as Worker (Thread Separada)
+    P->>W: new Worker('arquivo.js')
+    Note over W: Worker criado<br>Event Loop proprio
+    P->>W: postMessage({tarefas: [...]})
+    Note over P: Dados sao COPIADOS<br>(Structured Clone)
+    Note over W: onmessage recebe copia<br>Processa os dados
+    W->>P: postMessage({json: '...'})
+    Note over P: onmessage recebe<br>resultado processado
+    P->>P: Atualiza UI com resultado

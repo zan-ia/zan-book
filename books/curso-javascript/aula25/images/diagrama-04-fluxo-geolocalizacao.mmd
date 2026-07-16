@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant App
+    participant Navegador
+    participant Usuario
+    participant GPS
+    App->>Navegador: getCurrentPosition()
+    Navegador->>Usuario: "Permitir localizacao?"
+    alt Usuario permite
+        Usuario->>Navegador: Sim
+        Navegador->>GPS: Solicita coordenadas
+        GPS->>Navegador: latitude, longitude
+        Navegador->>App: Callback de sucesso
+    else Usuario nega
+        Usuario->>Navegador: Não
+        Navegador->>App: Callback de erro (PERMISSION_DENIED)
+    end

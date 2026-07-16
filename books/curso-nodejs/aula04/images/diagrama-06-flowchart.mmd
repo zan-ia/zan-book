@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph Callbacks
+        C1["readFile com callback"]
+        C2["Verifica err manualmente"]
+        C3["Callback hell em sequência"]
+        C1 --> C2 --> C3
+    end
+    subgraph Promises
+        P1["readFile retorna Promise"]
+        P2["Encadeia com then/catch"]
+        P3["Facilita sequência"]
+        P1 --> P2 --> P3
+    end
+    subgraph async await
+        A1["readFile com await"]
+        A2["try/catch limpo"]
+        A3["Código parece síncrono"]
+        A1 --> A2 --> A3
+    end

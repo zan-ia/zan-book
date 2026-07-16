@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant App as Seu codigo
+    participant DB as Banco
+
+    App->>DB: indexedDB.open(nome, versao)
+    DB-->>App: onsuccess (conexao)
+
+    App->>DB: db.transaction(store, modo)
+    App->>DB: transaction.objectStore(store)
+    App->>DB: store.add / put / get / delete
+    DB-->>App: IDBRequest.onsuccess
+    Note over App: Resultado em event.target.result

@@ -1,0 +1,11 @@
+flowchart LR
+  A[Arquivo JSON] --> B[FileReader le como texto]
+  B --> C[JSON.parse]
+  C --> D{Validar estrutura}
+  D -- Valido --> E[Para cada tarefa importada]
+  D -- Invalido --> F[Mostrar erro explicativo]
+  E --> G{Id existe no banco?}
+  G -- Nao --> H[Inserir nova tarefa]
+  G -- Sim --> I{Data atualizada e mais recente?}
+  I -- Sim --> J[Atualizar tarefa existente]
+  I -- Nao --> K[Manter original ignorar importada]

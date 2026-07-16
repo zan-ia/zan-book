@@ -1,0 +1,14 @@
+flowchart LR
+    subgraph Antes[Arquitetura Atual]
+        PC[projectController.js<br/>150 linhas] -->|Validacao + Logica + Resposta| R[Rotas Express]
+        TC[taskController.js<br/>150 linhas] -->|Validacao + Logica + Resposta| R
+    end
+
+    subgraph Depois[Arquitetura Refatorada]
+        PC2[projectController.js<br/>40 linhas] -->|So request/response| R2[Rotas Express]
+        PS[projectService.js<br/>60 linhas] -->|Logica de negocio| PC2
+        TC2[taskController.js<br/>40 linhas] -->|So request/response| R2
+        TS[taskService.js<br/>40 linhas] -->|Logica de negocio| TC2
+        H[helpers.js<br/>30 linhas] -->|Validacao e busca| PS
+        H -->|Validacao e busca| TS
+    end

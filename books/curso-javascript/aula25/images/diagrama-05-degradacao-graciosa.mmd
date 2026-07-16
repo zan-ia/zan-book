@@ -1,0 +1,16 @@
+flowchart TD
+    A[App inicia] --> B{temGeolocalizacao?}
+    B -->|Sim| C[Habilitar botao Localizacao]
+    B -->|Não| D[Ocultar botao Localizacao]
+    A --> E{temNotificacao?}
+    E -->|Sim| F[Solicitar permissao]
+    F --> G{Permitida?}
+    G -->|Sim| H[Habilitar notificacoes]
+    G -->|Não| I[Notificacoes desativadas]
+    E -->|Não| I
+    A --> J{temSinteseVoz?}
+    J -->|Sim| K[Habilitar botao Ouvir]
+    J -->|Não| L[Ocultar botao Ouvir]
+    A --> M{temVibracao?}
+    M -->|Sim| N[Adicionar feedback tatil]
+    M -->|Não| O[Sem vibracao - normal]

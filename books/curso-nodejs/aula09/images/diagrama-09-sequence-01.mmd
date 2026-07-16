@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant C as Cliente
+    participant H as Handler
+    participant F as Formatador
+    C->>H: Requisição inválida
+    H->>H: Detecta erro<br>lança ErroTipado
+    H->>F: propaga erro
+    F->>F: Identifica tipo<br>e formata resposta
+    F->>C: JSON estruturado<br>com status adequado

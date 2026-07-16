@@ -1,0 +1,11 @@
+flowchart TD
+    D[document] -->|CAPTURA: desce| H[html]
+    H -->|CAPTURA| BODY[body]
+    BODY -->|CAPTURA| AVO[div avo]
+    AVO -->|CAPTURA| PAI[div pai]
+    PAI -->|CAPTURA: TARGET| FILHO[button filho]
+    FILHO -->|BUBBLING: sobe| PAI
+    PAI -->|BUBBLING| AVO
+    AVO -->|BUBBLING| BODY
+    BODY -->|BUBBLING| H
+    H -->|BUBBLING| D

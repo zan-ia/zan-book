@@ -1,0 +1,8 @@
+flowchart TD
+    A[Faz pedido] --> B[Recebe numero do pedido]
+    B --> C[Cozinha inicia preparo]
+    C --> D{Checkpoint: Pedido cancelado}
+    D -->|Nao| E[Proxima etapa]
+    E --> D
+    D -->|Sim| F[Descarta ingredientes]
+    F --> G[Operacao encerrada]

@@ -1,0 +1,11 @@
+flowchart LR
+    S[String original] --> TE[TextEncoder]
+    TE --> R1[ReadableStream]
+    R1 --> CS[CompressionStream gzip]
+    CS --> W1[WritableStream acumulador]
+    W1 --> UA[Uint8Array comprimido]
+    UA --> R2[ReadableStream]
+    R2 --> DS[DecompressionStream gzip]
+    DS --> W2[WritableStream acumulador]
+    W2 --> TD[TextDecoder]
+    TD --> SF[String final restaurada]

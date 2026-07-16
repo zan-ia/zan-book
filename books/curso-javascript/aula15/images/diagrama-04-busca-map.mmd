@@ -1,0 +1,8 @@
+flowchart LR
+    arr["tarefas = [ ... ]"] --> busca1["busca por map()"]
+    busca1 -- "nao tem em tarefas" --> proto1["sobe para"]
+    proto1 --> arrProto["Array.prototype"]
+    arrProto --> busca2["busca por map()"]
+    busca2 -- "SIM! map() esta aqui" --> resultado["executa o metodo"]
+    arrProto --> objProto["Object.prototype"]
+    objProto --> nullNode["null"]

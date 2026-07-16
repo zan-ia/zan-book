@@ -1,0 +1,9 @@
+flowchart LR
+    T[Trigger] --> J1[Job 1<br/>lint]
+    T --> J2[Job 2<br/>test]
+    J1 --> G1{Gate<br/>passou}
+    J2 --> G2{Gate<br/>passou}
+    G1 -->|sim| J3[Job 3<br/>build]
+    G2 -->|sim| J3
+    G1 -->|nao| F[FAIL]
+    G2 -->|nao| F

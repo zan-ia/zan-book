@@ -1,0 +1,14 @@
+flowchart TD
+    subgraph Call Stack
+        CS["functionA()\nfunctionB()\nglobal"]
+    end
+    subgraph Task Queue
+        TQ["callback1\ncallback2\ncallback3"]
+    end
+    EL["Event Loop"] --> CS
+    EL --> TQ
+    CS -->|"vazia?"| EL
+    TQ -->|"pega próximo"| CS
+    style EL fill:#e74c3c,color:#fff
+    style CS fill:#e67e22,color:#fff
+    style TQ fill:#27ae60,color:#fff

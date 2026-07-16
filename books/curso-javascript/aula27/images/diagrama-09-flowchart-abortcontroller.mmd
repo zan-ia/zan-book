@@ -1,0 +1,10 @@
+flowchart TD
+    A[Usuario clica em Buscar Frase] --> B{Tem requisicao pendente?}
+    B -->|Sim| C["abort() na anterior"]
+    C --> D[Cria novo AbortController]
+    B -->|Nao| D
+    D --> E[fetch com signal]
+    E --> F{Requiscao completa?}
+    F -->|Sim| G[Exibe frase]
+    F -->|Cancelada| H[AbortError - ignora]
+    F -->|Erro real| I[Exibe erro]

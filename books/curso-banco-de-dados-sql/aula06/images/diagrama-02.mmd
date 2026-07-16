@@ -1,0 +1,9 @@
+flowchart LR
+    subgraph "INNER JOIN (interseção)"
+        A1["tarefas<br/>10 registros"] --> C1["8 registros<br/>com categoria"]
+        B1["categorias<br/>4 registros"] --> C1
+    end
+    subgraph "LEFT JOIN (todos da esquerda)"
+        A2["tarefas<br/>10 registros"] --> C2["10 registros<br/>8 com categoria<br/>2 sem (NULL)"]
+        B2["categorias<br/>4 registros"] -.-> C2
+    end

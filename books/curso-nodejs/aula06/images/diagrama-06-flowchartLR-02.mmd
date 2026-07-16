@@ -1,0 +1,11 @@
+flowchart LR
+    subgraph Request
+        M["GET"]
+        U["/tarefas"]
+        H["Accept: application/json"]
+    end
+    subgraph Response
+        S["200 OK"]
+        CT["Content-Type: application/json"]
+        B["[{ tarefas }]"]
+    end

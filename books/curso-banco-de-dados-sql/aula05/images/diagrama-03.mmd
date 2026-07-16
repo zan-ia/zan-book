@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph Codigo["Seu Código"]
+        Service -->|"listar()"| Repository
+        Repository -->|"knex('tarefas').select('*')"| Knex
+    end
+    subgraph KnexLayer["Knex Query Builder"]
+        Knex -->|"traduz para"| SQL
+    end
+    subgraph Ambiente["Configuração"]
+        ENV["NODE_ENV=development"] -->|"client: better-sqlite3"| SQLite[(SQLite)]
+        ENV2["NODE_ENV=production"] -->|"client: pg"| PG[(PostgreSQL)]
+    end
+    SQL --> Ambiente

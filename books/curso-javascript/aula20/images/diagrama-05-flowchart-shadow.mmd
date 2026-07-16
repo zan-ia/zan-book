@@ -1,0 +1,10 @@
+flowchart TD
+    H[Host element] --> SR[shadowRoot]
+    SR --> S1[slot name=titulo]
+    SR --> S2[slot default]
+    SR --> STYLE[style scoped]
+    H --> LD[Light DOM]
+    LD --> L1[span slot=titulo]
+    LD --> L2[p conteudo]
+    L1 -- projetado --> S1
+    L2 -- projetado --> S2

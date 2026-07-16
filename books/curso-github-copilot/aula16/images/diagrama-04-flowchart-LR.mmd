@@ -1,0 +1,11 @@
+flowchart LR
+    A[Componente] --> B[Playwright Render]
+    C[Screenshot Referencia] --> D{Pixel Compare}
+    B --> D
+    D -->|Match| E[Pass]
+    D -->|Diferenca| F[Diff Report]
+    F --> G{Diff threshold}
+    G -->|< 2 percent| H[Aprova]
+    G -->|>= 2 percent| I[Rejeita]
+    I --> J[Ajusta CSS]
+    J --> B

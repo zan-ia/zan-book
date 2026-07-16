@@ -1,0 +1,10 @@
+flowchart TD
+    A[Criado com new ou createElement] --> B[Constructor: super]
+    B --> C[Inserido no DOM]
+    C --> D[connectedCallback: renderizar + adicionar listeners]
+    D --> E{Atributo observado mudou?}
+    E -->|Sim| F[attributeChangedCallback: atualizar visual]
+    F --> E
+    E -->|Nao, permanece no DOM| E
+    E -->|Removido do DOM| G[disconnectedCallback: remover listeners]
+    G --> H[Elemento destruido]

@@ -1,0 +1,7 @@
+flowchart LR
+    REQ["Requisição"] --> CORS["cors<br>Headers CORS"]
+    CORS --> MOR["morgan<br>Logging HTTP"]
+    MOR --> EJ["express.json<br>Body parsing"]
+    EJ --> TS["Timestamp<br>Log customizado"]
+    TS --> ROTAS["Rotas<br>GET POST PUT DELETE"]
+    ROTAS --> ERR["Error Handler<br>500"]

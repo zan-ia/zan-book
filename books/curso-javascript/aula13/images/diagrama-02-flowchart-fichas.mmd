@@ -1,0 +1,17 @@
+flowchart LR
+    F[Formulario generico] --> R[Rotulo: NOME]
+    R --> V[Valor: ?]
+    F --> A[Acao: mostrarProprioNome]
+    
+    subgraph FichaDaAlice
+        FA1[Nome: Alice]
+        A1[mostrarProprioNome: usa this.nome]
+    end
+    
+    subgraph FichaDoBob
+        FB1[Nome: Bob]
+        A2[mostrarProprioNome: usa this.nome]
+    end
+    
+    A1 -->|this aponta para| FA1
+    A2 -->|this aponta para| FB1

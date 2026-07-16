@@ -1,0 +1,11 @@
+flowchart LR
+    subgraph ESModules[ES Modules - Navegador]
+        I1[import x from ./mod.js] --> E1[Analisado antes de rodar]
+        I1 --> T1[Tree-shaking possível]
+        I1 --> A1[Assíncrono]
+    end
+    subgraph ServerMod[Sistema do Servidor]
+        R1[função importar ./mod.js] --> E2[Executado na hora]
+        R1 --> T2[Dinâmico - pode estar em if]
+        R1 --> A2[Síncrono]
+    end

@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph Sources Panel
+        A[arquivo js] --> B[Clique no numero da linha]
+        B --> C[Breakpoint ativado]
+    end
+    subgraph Execucao
+        D[Programa rodando] --> E[Linha do breakpoint?]
+        E -->|Sim| F[PAUSA aqui]
+        E -->|Nao| G[Continua normalmente]
+    end
+    C --> D
+    F --> H[Inspecione variaveis]
+    H --> I[Resume ou Step]

@@ -1,0 +1,9 @@
+flowchart LR
+    subgraph Hash
+        A[Senha] --> B[Hash]
+        B -.->|Não volta| A
+    end
+    subgraph Criptografia
+        C[Mensagem] --> D[Cifra]
+        D -->|Com chave| C
+    end

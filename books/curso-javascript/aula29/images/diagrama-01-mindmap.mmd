@@ -1,0 +1,38 @@
+mindmap
+  root((Web Streams API))
+    FUNDAMENTOS PARTE 1
+      Streaming vs Batch
+        Torneira vs Balde
+        Processar conforme chega
+        Memória Finita
+      Pipeline
+        Esteira de Fábrica
+        Fonte Transformação Destino
+        Modular e Recombinável
+      Backpressure
+        Consumidor Controla
+        Correia Transportadora
+        Memoria Constante
+      Modelo Universal
+        Readable Fonte
+        Transform Transformacao
+        Writable Destino
+    APLICACAO PARTE 2
+      ReadableStream
+        getReader e read
+        Loop ate done true
+        response body
+      WritableStream
+        write e close
+        pipeTo
+      TransformStream
+        transform e controller
+        pipeThrough
+      CompressionStream
+        gzip
+        TextEncoder e TextDecoder
+      Streams e Workers
+        Transferência via postMessage
+      Projeto Gerenciador
+        Fetch streaming backup
+        Compressão IndexedDB

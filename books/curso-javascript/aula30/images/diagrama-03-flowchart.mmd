@@ -1,0 +1,9 @@
+flowchart LR
+    A[Inicio] --> B[try: operacao normal]
+    B -->|Sucesso| C[finally: limpeza garantida]
+    B -->|Falha| D[catch: plano de emergencia]
+    D --> C
+    C --> E[Continua]
+    style B fill:#90EE90,stroke:#333
+    style D fill:#FFB6C1,stroke:#333
+    style C fill:#ADD8E6,stroke:#333

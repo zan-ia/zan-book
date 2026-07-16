@@ -1,0 +1,19 @@
+flowchart LR
+    subgraph Arquivo["meu-modulo.js"]
+        P["const privado = 'so aqui dentro'"]
+        F["function helper() {}"]
+        V["let visivel = 'sim'"]
+        E["Exportacao<br/>Apenas o que eu escolher"]
+        P --> E
+        F --> E
+        V --> E
+    end
+    subgraph Consumidor["app.js"]
+        M["const mod = require('./meu-modulo')"]
+        A["mod.privado → undefined"]
+        B["mod.helper → undefined"]
+        C["mod.visivel → funciona se exportado"]
+        M --> A
+        M --> B
+        M --> C
+    end

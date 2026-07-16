@@ -1,0 +1,6 @@
+flowchart LR
+    R[Requisição] --> A[1. Autenticação<br/>Quem é você]
+    A -->|Identidade: id 5| B[2. Autorização<br/>O que pode fazer]
+    B -->|Recurso: tarefa 10| C{É dono?}
+    C -->|Sim: user_id 5 da tarefa = id 5 do token| D[200 OK]
+    C -->|Não| E[403 Proibido]

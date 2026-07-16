@@ -1,0 +1,10 @@
+flowchart TD
+    subgraph Topo[Poucos Lentos Caros]
+        E2E[Testes End-to-End<br/>fluxos completos do usuario]
+    end
+    subgraph Meio[Alguns Moderados]
+        INT[Testes de Integracao<br/>interacao entre componentes]
+    end
+    subgraph Base[Muitos Rapidos Baratos]
+        UNIT[Testes Unitarios<br/>funcoes e metodos isolados]
+    end

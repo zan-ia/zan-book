@@ -1,0 +1,10 @@
+flowchart TD
+    V["2.3.1"] --> MAJOR["MAJOR = 2<br/>Mudança que QUEBRA"]
+    V --> MINOR["MINOR = 3<br/>Adição COMPATÍVEL"]
+    V --> PATCH["PATCH = 1<br/>Correção COMPATÍVEL"]
+    MAJOR --> EX1["Ex: Renomear função<br/>v2 para v3"]
+    MINOR --> EX2["Ex: Adicionar parâmetro<br/>v3.1 para v3.2"]
+    PATCH --> EX3["Ex: Corrigir bug<br/>v3.2.0 para v3.2.1"]
+    style MAJOR fill:#e74c3c,color:#fff
+    style MINOR fill:#27ae60,color:#fff
+    style PATCH fill:#3498db,color:#fff

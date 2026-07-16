@@ -1,0 +1,8 @@
+flowchart LR
+    A[Voce recebe um vale-presente] --> B{Loja esta funcionando}
+    B -->|Sim| C[Troca o vale por um produto]
+    C --> D[Promessa Cumprida]
+    B -->|Nao| E[Loja faliu]
+    E --> F[Promessa Rejeitada]
+    D --> G[Voce tem o produto]
+    F --> H[Voce perdeu o valor]

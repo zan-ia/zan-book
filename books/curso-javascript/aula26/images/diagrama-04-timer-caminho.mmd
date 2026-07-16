@@ -1,0 +1,8 @@
+flowchart LR
+    A[Codigo programa timer 5000ms] --> B[Timer comeca a contar]
+    B --> C{5000ms se passaram}
+    C -->|Timer toca| D[Callback entra na Macrotask Queue]
+    D --> E{Call Stack vazia}
+    E -->|Sim| F[Callback executa]
+    E -->|Nao| G[Aguarda call stack esvaziar]
+    G --> E

@@ -1,0 +1,18 @@
+flowchart TD
+    R[Requiscao HTTP] --> E{E o que?}
+    E -->|Asset estatico<br>HTML CSS JS PNG| CF[Cache First]
+    E -->|Dado de API<br>frases dados| NF[Network First]
+    E -->|Recurso unico<br>app hash js| CO[Cache Only]
+    E -->|Dado sensivel<br>login token| NO[Network Only]
+
+    CF --> CF1[Tem no cache?]
+    CF1 -->|Sim| CF2[ Serve do cache<br>Instantaneo ]
+    CF1 -->|Nao| CF3[ Busca da rede<br>Armazena no cache ]
+
+    NF --> NF1[Tenta fetch da rede]
+    NF1 -->|Sucesso| NF2[ Armazena no cache<br>Retorna resposta ]
+    NF1 -->|Falha| NF3[ Recorre ao cache ]
+
+    CO --> CO1[ Retorna do cache<br>ou falha ]
+
+    NO --> NO1[ Retorna da rede<br>ou falha ]

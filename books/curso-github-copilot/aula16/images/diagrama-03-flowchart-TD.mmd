@@ -1,0 +1,8 @@
+flowchart TD
+    A[Pagina faz request] --> B{Request interceptado}
+    B -->|Sim| C[route.fulfill json mock]
+    B -->|Nao| D[Request real para API]
+    C --> E[Componente renderiza com dados mock]
+    D --> E
+    E --> F[Agente valida resposta]
+    F --> G[Trace Viewer analise]

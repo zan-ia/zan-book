@@ -1,0 +1,8 @@
+flowchart LR
+    A[Problema de layout] --> B{Que tipo?}
+    B -->|Comportamento| C[Playwright MCP]
+    B -->|Visual/Estilo| D[Browser MCP]
+    C --> E[Clica, navega, submete]
+    D --> F[Inspeciona CSS, modifica, testa]
+    E --> G[OK ou falha]
+    F --> H[Sugestao de correcao]

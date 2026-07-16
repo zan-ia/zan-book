@@ -1,0 +1,7 @@
+flowchart TD
+    subgraph Casa["CASA - Escopo Global"]
+        Sala["SALA DE ESTAR<br>variaveis da sala"]
+        Quarto["QUARTO<br>variaveis do quarto"]
+    end
+    Quarto -->|"Regra 1: de dentro ve fora<br>quarto VE a sala"| Sala
+    Sala -.->|"Regra 2: de fora NAO ve dentro<br>sala NAO ve o quarto"| Quarto

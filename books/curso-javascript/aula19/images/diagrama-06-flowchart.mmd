@@ -1,0 +1,7 @@
+flowchart LR
+    A[Elemento entra no DOM] --> B[connectedCallback: adiciona listener]
+    B --> C[Elemento sai do DOM]
+    C --> D{disconnectedCallback foi chamado?}
+    D -->|Sim| E[Listener removido]
+    D -->|Nao| F[Listener continua vivo na memoria]
+    F --> G[Memory leak: elemento nao pode ser destruido]

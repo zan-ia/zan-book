@@ -1,0 +1,23 @@
+flowchart TD
+    subgraph Apresentacao
+        R[Route]
+        C[Controller]
+    end
+    subgraph Negocio
+        S[Service]
+    end
+    subgraph Dados
+        Rep[Repository]
+        F[(Arquivo JSON)]
+    end
+
+    REQ[Requisição HTTP] --> R
+    R --> C
+    C --> S
+    S --> Rep
+    Rep --> F
+    F --> Rep
+    Rep --> S
+    S --> C
+    C --> R
+    R --> RES[Resposta HTTP]

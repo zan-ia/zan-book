@@ -1,0 +1,5 @@
+flowchart LR
+    RAM["Memória RAM<br/>(volátil, rápida, nanossegundos)"]
+    DISK["Disco<br/>(persistente, lento, milissegundos)"]
+    RAM -->|"Dados somem ao desligar"| VOID
+    DISK -->|"Dados sobrevivem"| PERSIST
