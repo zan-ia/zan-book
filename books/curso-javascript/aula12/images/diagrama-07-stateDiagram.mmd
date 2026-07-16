@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> Inexistente
+    Inexistente --> Criada: atribuir obj.chave = valor
+    Criada --> Modificada: reatribuir obj.chave = novoValor
+    Modificada --> Modificada: reatribuir novamente
+    Criada --> Removida: delete obj.chave
+    Modificada --> Removida: delete obj.chave
+    Removida --> Inexistente: propriedade não existe mais
+    Removida --> Criada: atribuir novamente

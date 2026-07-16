@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph Concepcao
+        A[Issue: tarefa registrada] --> B[Plan: planejamento automatico]
+    end
+    subgraph Execucao
+        B --> C[Code: implementacao autonoma]
+        C --> D[Test: geracao e execucao de testes]
+        D --> E[PR: proposta de mudanca]
+        E --> F[Review: revisao paralela]
+    end
+    subgraph Entrega
+        F --> G[CI/CD: quality gates]
+        G --> H[Deploy: publicacao em producao]
+    end
+    H -.-> I[Refine: melhoria continua]
+    I -.-> B

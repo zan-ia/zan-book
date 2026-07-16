@@ -1,0 +1,10 @@
+flowchart TD
+    PUSH[Push ou PR] --> CI[Pipeline CI<br/>lint typecheck test build]
+    PUSH --> CQL[CodeQL<br/>Analise estatica de seguranca]
+    CI --> RESULT1[Status verde<br/>ou vermelho]
+    CQL --> RESULT2[Security alerts<br/>ou OK]
+    SCHED[Agendado semanal] --> CQL
+    DEP[Dependabot<br/>semanal] --> PRS[PRs de atualizacao]
+    PRS --> CI
+    RESULT1 --> DASH[Visivel em<br/>Actions + PR + Badges]
+    RESULT2 --> DASH

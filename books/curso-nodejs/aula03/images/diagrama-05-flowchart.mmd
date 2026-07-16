@@ -1,0 +1,13 @@
+flowchart TD
+    Inicio[require cowsay] --> Passo1{Core module?}
+    Passo1 -->|Sim| RetornaCore[Retorna módulo core<br/>fs, path, http...]
+    Passo1 -->|Não| Passo2{Comeca com . ou /?}
+    Passo2 -->|Sim| CaminhoLocal[Resolve caminho<br/>Testa .js .json .node]
+    Passo2 -->|Não| Passo3{node_modules<br/>no diretório atual?}
+    Passo3 -->|Sim| Achou[Retorna pacote]
+    Passo3 -->|Não| Sobe[Sobe diretório pai]
+    Sobe --> Passo3
+    CaminhoLocal --> ErroOuAchou2{Achou?}
+    ErroOuAchou2 -->|Sim| RetornaModulo[Retorna o módulo]
+    ErroOuAchou2 -->|Não| Erro[Error: MODULE_NOT_FOUND]
+    Achou --> RetornaModulo

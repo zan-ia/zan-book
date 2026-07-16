@@ -1,0 +1,6 @@
+flowchart LR
+  A[git add .] --> B[git commit]
+  B --> C[git push]
+  C --> D[GitHub recebe codigo]
+  D --> E[GitHub Actions deploy]
+  E --> F[Site publicado em HTTPS]

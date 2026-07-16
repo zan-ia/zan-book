@@ -1,0 +1,15 @@
+flowchart TD
+    subgraph EscopoGlobal
+        W[Window: this global]
+        P[pessoa]
+    end
+    
+    P --> RM[saudacaoRegular function]
+    P --> AM[saudacaoArrow arrow]
+    
+    RM -->|this = pessoa quem chamou| R1[this.nome = Alice]
+    AM -->|this = Window herdado| A1[this.nome = undefined]
+    W --> AM
+    
+    R2[Regra: quem chamou] -.-> RM
+    A2[Regra: escopo de criacao] -.-> AM

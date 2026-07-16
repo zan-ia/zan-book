@@ -1,0 +1,9 @@
+flowchart LR
+    P[Produtor Correia] -->|Fluxo de pecas| M[Mesa do Trabalhador]
+    M --> T[Trabalhador Consumidor]
+    P -.->|Botao PARAR| M
+    P -.->|Botao CONTINUAR| M
+    subgraph Backpressure
+        B1[Se mesa cheia: trava correia]
+        B2[Se mesa livre: libera correia]
+    end

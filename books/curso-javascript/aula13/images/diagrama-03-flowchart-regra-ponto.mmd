@@ -1,0 +1,6 @@
+flowchart LR
+    P[pessoa] -->|chama| M[.apresentar]
+    M -->|this aponta para| P
+    P --> N[nome: Alice]
+    P --> I[idade: 30]
+    M -->|this.nome = Alice| RN[Resultado: Ola eu sou Alice]

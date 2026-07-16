@@ -1,0 +1,11 @@
+flowchart LR
+    subgraph forEach
+    A1[Array] --> B1[forEach: executa callback]
+    B1 --> C1[undefined]
+    B1 --> D1[Acao colateral: console.log etc]
+    end
+    subgraph map
+    A2[Array] --> B2[map: executa callback]
+    B2 --> C2[Novo array transformado]
+    B2 --> D2[Original permanece intacto]
+    end

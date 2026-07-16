@@ -1,0 +1,9 @@
+flowchart LR
+    A[Farinha] -->|Se chegar| B[Massa]
+    B -->|Se pronta| C[Montar Pizza]
+    C -->|Se montada| D[Assar]
+    D -->|Se assada| E[Entregar]
+    A -->|Se nao chegar| F[Falha na Producao]
+    B -->|Se falhar| F
+    C -->|Se falhar| F
+    D -->|Se falhar| F

@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Dev as Desenvolvedor
+    participant CLI as Ferramenta de Migration
+    participant DB as Banco de Dados
+    participant Git as Repositório Git
+
+    Dev->>CLI: criar migration "adicionar_prioridade"
+    CLI->>Dev: arquivo 002_adicionar_prioridade.js
+    Dev->>Git: commit da migration + código
+    Dev->>CLI: rodar migrations pendentes
+    CLI->>DB: verificar tabela de controle
+    DB->>CLI: migrations já executadas: [001]
+    CLI->>DB: executar 002_adicionar_prioridade (up)
+    DB->>CLI: OK
+    CLI->>DB: registrar 002 na tabela de controle
+    Note over Dev,DB: outro desenvolvedor
+    Dev2->>Git: git pull
+    Dev2->>CLI: rodar migrations pendentes
+    CLI->>DB: verificar tabela de controle
+    DB->>CLI: migrations já executadas: [001]
+    CLI->>DB: executar 002_adicionar_prioridade (up)
+    DB->>CLI: OK
+    Note over Dev2,DB: banco sincronizado

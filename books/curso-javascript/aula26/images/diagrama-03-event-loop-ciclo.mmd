@@ -1,0 +1,9 @@
+flowchart TD
+    A[Call Stack vazia] --> B{Microtask Queue tem algo}
+    B -->|Sim| C[Processa UMA microtask]
+    C --> B
+    B -->|Nao| D{Macrotask Queue tem algo}
+    D -->|Sim| E[Move UMA macrotask para Call Stack]
+    E --> F[Executa ate a Call Stack esvaziar]
+    F --> A
+    D -->|Nao| A

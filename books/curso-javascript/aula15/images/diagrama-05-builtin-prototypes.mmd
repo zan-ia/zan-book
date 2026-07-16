@@ -1,0 +1,17 @@
+flowchart TD
+    objProto["Object.prototype"]
+    objProto --> objMethods["toString, hasOwnProperty, isPrototypeOf, valueOf"]
+
+    arrProto["Array.prototype"] --> arrUp["sobe para"]
+    arrUp --> objProto
+    arrProto --> arrMethods["map, filter, forEach, push, pop, reduce, find, some, every"]
+
+    strProto["String.prototype"] --> strUp["sobe para"]
+    strUp --> objProto
+    strProto --> strMethods["toUpperCase, toLowerCase, trim, slice, replace, includes, split"]
+
+    funcProto["Function.prototype"] --> funcUp["sobe para"]
+    funcUp --> objProto
+    funcProto --> funcMethods["call, apply, bind"]
+
+    todos["TODOS os prototypes"] --> objProto

@@ -1,0 +1,8 @@
+flowchart LR
+  A[IndexedDB] --> B[Buscar todas as tarefas]
+  B --> C[Criar objeto com versao e data]
+  C --> D[JSON.stringify]
+  D --> E[Blob]
+  E --> F[URL.createObjectURL]
+  F --> G[Link de download]
+  G --> H[Usuario baixa o arquivo]

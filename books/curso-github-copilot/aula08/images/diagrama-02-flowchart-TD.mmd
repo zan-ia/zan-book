@@ -1,0 +1,18 @@
+flowchart TD
+    subgraph E2E[Testes End-to-End]
+        E2E1[Navegador real]
+        E2E2[API real]
+        E2E3[Banco real]
+        E2E4[Fluxo completo do usuario]
+    end
+    subgraph INT[Testes de Integracao]
+        INT1[Modulos conversam]
+        INT2[API responde]
+        INT3[Banco persiste]
+    end
+    subgraph UNIT[Testes Unitarios]
+        UNIT1[Funcao isolada]
+        UNIT2[Componente puro]
+        UNIT3[Logica de negocios]
+    end
+    UNIT --> INT --> E2E

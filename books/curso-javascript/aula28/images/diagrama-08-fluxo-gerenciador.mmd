@@ -1,0 +1,29 @@
+flowchart TD
+    U[Usuario abre<br>Gerenciador] --> P[Pagina carrega]
+    P --> R[Registra SW<br>navigator.serviceWorker.register]
+    P --> I[Inicializa IndexedDB<br>Carrega tarefas]
+    R --> S[SW instala<br>Cacheia assets]
+    S --> A[SW ativado<br>Pronto para interceptar]
+
+    U --> C[Cria tarefa]
+    C --> DB[(IndexedDB)]
+    DB --> UI[UI atualiza]
+
+    U --> E[Clica Exportar]
+    E --> W[Cria Web Worker]
+    W --> DB
+    W -->|Processa em paralelo| JSON[Gera JSON]
+    JSON -->|Download| U
+
+    U --> F[Navega ou recarrega]
+    F --> SW[SW intercepta fetch]
+    SW -->|Cache First| CACHE[Cache<br>Assets]
+    SW -->|Network First| NET[Fetch da rede]
+    NET -->|Falhou| CACHE_FB[Cache fallback]
+    CACHE --> PAG[Pagina carregada]
+    NET --> PAG
+    CACHE_FB --> PAG
+
+    U --> OFF[Fica offline]
+    OFF --> SW_OFF[SW intercepta tudo]
+    SW_OFF -->|Cache serve tudo| APP_OK[App funciona offline<br>Frases com fallback]

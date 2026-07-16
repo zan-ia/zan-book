@@ -1,0 +1,9 @@
+flowchart LR
+    A[delay 1000] -->|then| B[Passo 1]
+    B -->|return delay 1000| C[then Passo 2]
+    C -->|return delay 1000| D[then Passo 3]
+    D -->|return delay 1000| E[then Passo 4]
+    B -->|erro| F[catch]
+    C -->|erro| F
+    D -->|erro| F
+    E -->|erro| F

@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph CLASS[Sintaxe class]
+        C1[class Tarefa] --> C2["Tarefa.prototype\n{ exibir, constructor }"]
+        C2 --> C3["new Tarefa\ninstancia"]
+    end
+    subgraph FUNC[Sintaxe function]
+        F1[function Tarefa] --> F2["Tarefa.prototype\n{ exibir, constructor }"]
+        F2 --> F3["new Tarefa\ninstancia"]
+    end
+    C2 -.->|Mesma estrutura| F2

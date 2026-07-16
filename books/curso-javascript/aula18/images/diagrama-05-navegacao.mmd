@@ -1,0 +1,5 @@
+flowchart TD
+    AVO["parentElement (sobe)"] --> PAI["nó atual"]
+    PAI --> FILHOS["children (desce)"]
+    IRMAO_ANT["previousElementSibling (esquerda)"] --> PAI
+    PAI --> IRMAO_PROX["nextElementSibling (direita)"]

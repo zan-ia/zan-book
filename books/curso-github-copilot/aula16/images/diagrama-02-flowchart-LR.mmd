@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph IDE
+        A[Assistente de Codigo] --> B[Playwright MCP Server]
+    end
+    subgraph MCP
+        B --> C[23 Tools]
+    end
+    subgraph Browser
+        C --> D[Chromium]
+        C --> E[Firefox]
+        C --> F[WebKit]
+    end
+    D --> G[Resultado]
+    E --> G
+    F --> G
+    G --> A

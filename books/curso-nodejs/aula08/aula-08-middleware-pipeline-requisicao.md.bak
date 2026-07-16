@@ -1,0 +1,789 @@
+---
+titulo: "Node.js — Do Zero ao Servidor Express"
+modulo: "01"
+aula: "08"
+duracao_estimada: "90 minutos"
+nivel: "intermediário"
+tags: [middleware, pipeline, express, chain-of-responsibility, next, cors, morgan, error-handler, logging, body-parsing]
+---
+
+# Node.js — Do Zero ao Servidor Express — Aula 08
+
+## Middleware — O Pipeline de Requisição
+
+**Duração estimada:** 90 minutos (50 de leitura + 40 de prática)
+**Nível:** Intermediário
+**Pré-requisitos:** Aula 01 a 07 (EventEmitter, http nativo, Express, rotas CRUD)
+
+---
+
+## Objetivos de Aprendizagem
+
+Ao final desta aula, você será capaz de:
+
+- [ ] **Explicar** o que é o pattern de pipeline e como ele organiza o fluxo de dados em estações sequenciais
+- [ ] **Descrever** o contrato `next()` e os três possíveis resultados de uma função no pipeline
+- [ ] **Comparar** o pipeline de middlewares com o EventEmitter (Aula 05), identificando as diferenças entre broadcast e encadeamento
+- [ ] **Justificar** por que a ordem de registro dos middlewares determina o comportamento do servidor
+- [ ] **Construir** um middleware customizado com a assinatura `(req, res, next)` usando `app.use()`
+- [ ] **Demonstrar** internamente como `express.json()` funciona — leitura de stream, acumulação de chunks, `JSON.parse`
+- [ ] **Implementar** um middleware de erro com 4 parâmetros `(err, req, res, next)`
+- [ ] **Integrar** middlewares de terceiros (cors, morgan) ao servidor Express
+- [ ] **Criar** um middleware de timestamp que registra método, URL e horário de cada requisição
+- [ ] **Reconhecer** o Middleware Pattern como uma implementação do padrão Chain of Responsibility
+
+---
+
+## Como Usar Esta Aula
+
+Esta aula está organizada em duas partes. A **primeira parte** constrói o conceito universal de pipeline com a analogia do aeroporto. A **segunda parte** aplica esses conceitos com Express.js, revelando `express.json()` e criando middlewares customizados.
+
+## Mapa Mental
+
+Este diagrama mostra todos os conceitos que você vai dominar nesta aula:
+
+```mermaid
+mindmap
+  root((Middleware Pipeline))
+    Pipeline Pattern
+      Analogia do Aeroporto
+      Estações de Processamento
+      Fluxo de Dados
+    Contrato next
+      Processar e passar
+      Responder e parar
+      Delegar erro
+    Ordem Importa
+      Sequência de Execução
+      Visibilidade Parcial
+      Error Handler por último
+    Express
+      app use
+      req res next
+      express json
+      Middleware de Erro
+        err req res next
+      Middleware de Terceiros
+        cors
+        morgan
+    Projeto Progressivo
+      Logging com Timestamp
+      Ordem Final
+```
+
+> *O mapa mental acima mostra a estrutura da aula. Cada ramo representa um conceito que você vai explorar.*
+
+## Recapitulação das Aulas Anteriores
+
+| Aula | Conceito | Onde aparece nesta aula | Como se conecta |
+|---|---|---|---|
+| Aula 04 | **tarefas-repo.js** (fs) | Seções 4, 8 | O servidor que receberá os novos middlewares usa o repositório da Aula 04 |
+| Aula 05 | **EventEmitter** (broadcast) | Seção 2 | Comparação direta: broadcast de eventos vs pipeline encadeado |
+| Aula 06 | **Body parsing manual** (req.on data) | Seção 5 | `express.json()` substitui o parsing manual que você fez com eventos |
+| Aula 07 | **express.json como caixa-preta** | Seções 4 a 8 | O middleware que você usou sem entender agora é revelado |
+
+---
+
+**FUNDAMENTOS: O Pipeline de Processamento**
+
+> *Os conceitos desta seção são universais — valem para qualquer servidor web, independentemente do framework. Na segunda parte, você verá a implementação concreta.*
+
+---
+
+## 1. O Pipeline Pattern — Analogia do Aeroporto
+
+Imagine que você está em um aeroporto. Antes de embarcar, você passa por uma sequência de estações:
+
+1. **Check-in**: você apresenta seus documentos, pesa a bagagem e recebe o cartão de embarque
+2. **Segurança**: você coloca seus pertences na esteira, passa pelo detector de metais
+3. **Imigração**: seu passaporte é verificado e carimbado
+4. **Embarque**: você apresenta o cartão e entra no avião
+
+Cada estação recebe você (os dados), processa algo, e decide: **aprova e passa adiante** ou **recusa e envia para uma área de erro**. Você nunca pula uma estação — a ordem é fixa.
+
+Esse é exatamente o pattern de **pipeline**: dados entram em uma ponta, passam por funções em sequência, e saem transformados na outra ponta.
+
+```mermaid
+flowchart LR
+    REQ["Dados de Entrada"] --> S1["Estação 1<br>Check-in"]
+    S1 -->|"Aprovado"| S2["Estação 2<br>Segurança"]
+    S1 -->|"Recusado"| ERR["Estação de Erro"]
+    S2 -->|"Aprovado"| S3["Estação 3<br>Imigração"]
+    S2 -->|"Recusado"| ERR
+    S3 -->|"Aprovado"| S4["Estação 4<br>Embarque"]
+    S3 -->|"Recusado"| ERR
+    S4 --> RESP["Resposta Final"]
+```
+
+Você já conhece esse pattern do JavaScript. Quando escreve `array.filter(fn).map(fn).reduce(fn)`, cada método é uma estação do pipeline — os dados fluem de um para o outro em ordem.
+
+Só que no servidor web, o pipeline tem uma diferença crucial: **cada estação pode interromper o fluxo**. Se a segurança barra você, o aeroporto não te deixa embarcar. Se um middleware de autenticação rejeita a requisição, ela nunca chega à rota final.
+
+### Quick Check 1
+
+**1. Em um pipeline, o que acontece com os dados quando uma estação recusa o processamento?**
+**Resposta:** Os dados são desviados para uma estação de erro, interrompendo o fluxo normal. O pipeline para de executar as estações seguintes.
+
+**2. Como o pipeline de aeroporto se compara ao encadeamento de métodos de array como filter e map?**
+**Resposta:** Ambos passam dados por funções em sequência. No array, cada método processa todos os dados e passa o resultado adiante. No pipeline de servidor, cada estação pode interromper o fluxo ou transformar o contexto.
+
+---
+
+## 2. Funções Encadeadas e o Contrato `next`
+
+Cada estação do pipeline é uma função que recebe duas coisas: o **contexto** (os dados que estão fluindo) e uma função **next** que transfere o controle para a próxima estação.
+
+O contrato é simples — dentro de cada função, você tem três caminhos:
+
+1. **Processar e passar adiante**: faça algo com o contexto, depois chame `next()` para continuar
+2. **Responder e interromper**: envie uma resposta final e NÃO chame `next()` — o pipeline para
+3. **Delegar erro**: chame `next(erro)` para pular todas as estações normais e ir direto para o tratamento de erro
+
+Veja o pattern em código genérico — sem framework, sem JavaScript, apenas a ideia:
+
+~~~~
+estação 1 (contexto, next):
+  processa contexto
+  next()  // passa para a próxima
+
+estação 2 (contexto, next):
+  se contexto inválido:
+    next(erro)  // delega para o handler de erro
+  next()  // continua
+
+estação 3 (contexto, next):
+  contexto.resposta = "pronto"
+  // não chama next() — pipeline encerra
+~~~~
+
+Perceba: cada função decide o destino do fluxo. A função `next` é o elo entre as estações — sem ela, o pipeline para.
+
+A comparação com o **EventEmitter** (Aula 05) revela a diferença fundamental:
+
+| Característica | EventEmitter (Aula 05) | Pipeline (Esta aula) |
+|---|---|---|
+| Propagação | Broadcast para todos os listeners | Encadeamento sequencial |
+| Ordem | Todos recebem, sem dependência | Ordem determina o que cada estação vê |
+| Interromper | Não tem como parar a propagação | Não chamar next interrompe |
+| Erro | Erro em um listener não afeta outros | next(error) pula para handler de erro |
+
+No EventEmitter, quando você emite um evento, todos os listeners recebem a mesma informação simultaneamente — um não espera o outro. No pipeline, cada estação espera a anterior terminar, pode modificar o contexto, e decide se o fluxo continua.
+
+### Quick Check 2
+
+**1. Quais são os três resultados possíveis ao chamar a função next() dentro de uma estação do pipeline?**
+**Resposta:** Passar adiante com `next()`, interromper ao não chamar `next()`, ou delegar erro com `next(erro)`. Cada um leva a um destino diferente.
+
+**2. Qual a diferença fundamental entre o EventEmitter broadcast e o pipeline encadeado?**
+**Resposta:** No EventEmitter, todos os listeners recebem o evento simultaneamente e não dependem uns dos outros. No pipeline, as estações executam em sequência e cada uma pode modificar o contexto antes de passar adiante.
+
+---
+
+## 3. Ordem Importa — Tratamento de Erro no Pipeline
+
+A ordem das estações no pipeline não é um detalhe — é a **definição do comportamento**. Cada middleware vê apenas o que os anteriores produziram. Se um middleware de parsing vem depois de um de autenticação, o de autenticação não tem acesso aos dados parseados.
+
+Pense nas implicações:
+
+- **Logging** deve vir primeiro: você quer registrar a requisição antes de qualquer processamento
+- **Autenticação** vem depois: se o usuário não está autenticado, nem precisa tentar parsear o body
+- **Parsing** vem em seguida: as rotas precisam dos dados parseados
+- **Rotas** recebem tudo pronto
+- **Error handler** é o último: captura qualquer erro que ocorreu nas etapas anteriores
+
+Esse encadeamento com uma estação final especializada em erros é conhecido como **Chain of Responsibility** — um pattern onde cada elo decide se processa ou passa adiante. O error handler é o último elo, a última chance de responder.
+
+```mermaid
+flowchart LR
+    REQ["Requisição"] --> L1["Middleware 1<br>Logging"]
+    L1 --> L2["Middleware 2<br>Autenticação"]
+    L2 -->|"Autenticado"| L3["Middleware 3<br>Parsing"]
+    L2 -->|"Falhou"| ERR["Error Handler"]
+    L3 --> L4["Middleware 4<br>Validação"]
+    L4 --> ROTA["Rota Final"]
+    ROTA -->|"OK"| RESP["Resposta"]
+    ROTA -->|"Erro"| ERR
+```
+
+Perceba os dois fluxos de erro: a autenticação pode falhar e pular direto para o error handler, ou a rota pode lançar um erro durante o processamento. Em ambos os casos, o error handler — que está **depois** de tudo — captura e responde.
+
+Se o error handler estivesse antes das rotas, ele nunca capturaria os erros delas. A posição define o alcance.
+
+### Quick Check 3
+
+**1. Por que a ordem de registro das funções no pipeline é importante para o comportamento do servidor?**
+**Resposta:** Porque cada middleware vê apenas o que os anteriores processaram. Se a ordem muda, o dado que cada um recebe também muda — um middleware de parsing depois de um de autenticação não afeta a autenticação.
+
+**2. O que caracteriza uma função de tratamento de erro e por que ela deve vir por último?**
+**Resposta:** Ela é chamada quando `next(erro)` é invocado — captura o erro e prepara uma resposta. Deve vir por último para capturar erros de todos os middlewares e rotas anteriores.
+
+---
+
+> *Você entendeu o pattern no abstrato — pipeline, next(), ordem, erro. Agora vamos ver como o Express implementa exatamente esse padrão na prática.*
+
+---
+
+**APLICAÇÃO: Middleware na Prática com Express**
+
+> *Agora que você entende os fundamentos do pipeline, do contrato next() e da ordem de execução, vamos aplicá-los com Express.js — onde o pattern de middleware é a espinha dorsal do framework.*
+
+---
+
+## 4. `(req, res, next)` e `app.use()` — Seu Primeiro Middleware
+
+No Express, cada middleware é uma função com **exatamente três parâmetros**: `req` (requisição), `res` (resposta) e `next` (o elo para o próximo middleware).
+
+```javascript
+function meuMiddleware(req, res, next) {
+  // 1. Processa a requisição (req)
+  // 2. Opcional: modifica req ou res
+  // 3. Decide: next(), res.json(), ou next(erro)
+}
+```
+
+Os três caminhos do pipeline se traduzem diretamente no Express:
+
+| Pipeline genérico | Express |
+|---|---|
+| Processar e chamar next() | Fazer algo com req/res e chamar `next()` |
+| Responder e interromper | Chamar `res.json()` ou `res.send()` sem next() |
+| Chamar next(erro) | Chamar `next(erro)` para pular para o error handler |
+
+Para registrar um middleware, use **`app.use()`** — ele adiciona a função ao pipeline global do Express. Toda requisição passa por ele.
+
+```javascript
+const express = require('express');
+const app = express();
+
+// Middleware de logging — registra toda requisição
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next(); // passa para o próximo middleware ou rota
+});
+
+app.get('/', (req, res) => {
+  res.send('Pipeline funcionando!');
+});
+
+app.listen(3000);
+```
+
+Execute e veja o logging no terminal a cada requisição.
+
+**Conexão com Seção 2:** o `next` aqui é exatamente o `next()` do contrato genérico que você estudou. A única diferença é que o Express já fornece `req` e `res` como contexto — você só precisa escrever a lógica.
+
+**Mão na Massa — Seu Primeiro Middleware:**
+
+- [ ] Abra o `servidor-express.js` que você criou na Aula 07
+- [ ] Adicione o middleware de logging logo após `const app = express()`, antes de qualquer rota
+- [ ] Teste com `curl http://localhost:3000/tarefas`
+- [ ] Observe o log no terminal: `[2026-07-14T...] GET /tarefas`
+
+**Verificação:** O terminal mostra o log formatado. Se o log não aparecer, o middleware não está registrado ou o next() não está sendo chamado.
+
+### Quick Check 4
+
+**1. Quais são os três parâmetros de um middleware Express e o que cada um representa?**
+**Resposta:** `req` (requisição HTTP), `res` (resposta HTTP) e `next` (função que passa o controle ao próximo middleware). É a implementação concreta do contrato next da Seção 2.
+
+**2. O que acontece se um middleware chama res.json() sem chamar next()?**
+**Resposta:** O pipeline para naquele middleware — a resposta é enviada ao cliente e os middlewares seguintes nunca executam. Equivale ao cenário "responder e interromper" da Seção 2.
+
+---
+
+## 5. `express.json()` Desvendado — Abrindo a Caixa-Preta
+
+Na Aula 07 você escreveu `app.use(express.json())` e o body das requisições POST apareceu magicamente em `req.body`. Agora você sabe que `express.json()` é um middleware — e você entende o pipeline. Está na hora de abrir a caixa-preta.
+
+`express.json()` faz exatamente o que você fez manualmente na Aula 06:
+
+1. **Lê a stream**: escuta o evento `data` da requisição
+2. **Acumula chunks**: junta cada pedaço de dados que chega em um buffer
+3. **Parseia**: no evento `end`, chama `JSON.parse()` no buffer completo
+4. **Anexa ao req**: coloca o objeto resultante em `req.body`
+5. **Passa adiante**: chama `next()` para o próximo middleware ou rota
+
+```mermaid
+flowchart LR
+    REQ["Requisição POST<br>com JSON body"] --> EJ["express.json"]
+    EJ --> READ["Lê a stream<br>req.on(data)"]
+    READ --> ACC["Acumula chunks"]
+    ACC --> PARSE["JSON.parse"]
+    PARSE --> BODY["req.body = obj"]
+    BODY --> NEXT["next()"]
+    NEXT --> ROTA["Rota POST"]
+```
+
+Para provar que não é magia, faça o teste: comente a linha do `express.json()` e tente criar uma tarefa:
+
+```javascript
+// app.use(express.json()); ← descomente esta linha
+
+app.post('/tarefas', async (req, res) => {
+  console.log('req.body:', req.body); // undefined
+  // ...
+});
+```
+
+```bash
+curl -X POST http://localhost:3000/tarefas \
+  -H "Content-Type: application/json" \
+  -d '{"titulo":"Teste"}'
+```
+
+`req.body` será `undefined`. O middleware de parsing tem que estar registrado — senão o Express passa o body cru para a rota (que não sabe o que fazer com ele).
+
+**Conexão com Aula 06:** na Aula 06 você escreveu manualmente:
+```javascript
+let body = '';
+req.on('data', chunk => body += chunk);
+req.on('end', () => {
+  const dados = JSON.parse(body);
+  // processar dados
+});
+```
+
+`express.json()` é exatamente isso — mas encapsulado em um middleware reutilizável que você ativa com uma linha.
+
+**Mão na Massa — Testando sem express.json():**
+
+- [ ] No `servidor-express.js`, comente a linha `app.use(express.json())`
+- [ ] Execute o servidor e faça um POST com curl
+- [ ] Observe que o servidor retorna 400 com erro de validação (ou quebra) porque `req.body` é `undefined`
+- [ ] Descomente a linha e teste novamente — o POST funciona
+
+**Verificação:** Com `express.json()` comentado, o POST retorna erro ou comportamento inesperado. Com ele ativo, o POST cria a tarefa e retorna 201.
+
+### Quick Check 5
+
+**1. O que o middleware express.json() faz internamente com o corpo da requisição?**
+**Resposta:** Ele escuta os eventos data e end da stream, acumula os chunks em um buffer, executa JSON.parse no resultado e anexa o objeto a req.body. Depois chama next() para continuar o pipeline.
+
+**2. O que acontece com req.body se express.json() não for registrado no servidor?**
+**Resposta:** req.body fica undefined — o Express não faz parsing automático. Qualquer tentativa de acessar req.body.titulo lança um erro.
+
+---
+
+## 6. Middleware de Erro — `(err, req, res, next)`
+
+No Express, um middleware de erro se parece com um middleware normal, mas tem **quatro parâmetros** em vez de três. O primeiro parâmetro é o erro:
+
+```javascript
+app.use((err, req, res, next) => {
+  console.error('Erro capturado:', err.message);
+  res.status(500).json({ erro: 'Erro interno do servidor' });
+});
+```
+
+O Express usa a **aridade** da função — o número de parâmetros declarados — para distinguir middlewares normais de middlewares de erro. `function(req, res, next)` tem 3 parâmetros. `function(err, req, res, next)` tem 4.
+
+**Regra de ouro:** middlewares de erro devem ser registrados **depois de todas as rotas**. Se colocar antes, eles nunca capturam erros das rotas que vêm depois.
+
+```javascript
+// Rotas
+app.get('/tarefas', async (req, res) => { /* ... */ });
+app.post('/tarefas', async (req, res) => { /* ... */ });
+
+// Middleware de erro — SEMPRE por último
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ erro: 'Algo quebrou no servidor' });
+});
+
+// Rota de teste que gera erro
+app.get('/erro', (req, res, next) => {
+  next(new Error('Erro proposital para teste'));
+});
+```
+
+Quando um middleware ou rota chama `next(erro)`, o Express **pula** todos os middlewares normais e vai direto para o primeiro middleware de erro registrado.
+
+**Conexão com Seção 3:** no pipeline genérico, `next(erro)` desvia para o error handler. No Express, a mecânica é idêntica — a única diferença é que o error handler recebe o erro como primeiro argumento.
+
+**Mão na Massa — Middleware de Erro:**
+
+- [ ] No final do `servidor-express.js`, adicione um middleware de erro que retorna 500 com `{ erro: err.message }`
+- [ ] Adicione a rota `GET /erro` que chama `next(new Error('Erro de teste'))`
+- [ ] Teste com `curl http://localhost:3000/erro`
+- [ ] Mude o middleware de erro para antes das rotas e veja que o erro não é capturado
+
+**Verificação:** `curl http://localhost:3000/erro` retorna `{"erro":"Erro de teste"}` com status 500. Se retornar algo diferente, o middleware de erro não está na posição correta.
+
+### Quick Check 6
+
+**1. Como o Express diferencia um middleware de erro de um middleware normal?**
+**Resposta:** Pela aridade — middleware normal tem 3 parâmetros (req, res, next), middleware de erro tem 4 (err, req, res, next).
+
+**2. O que acontece se o middleware de erro for registrado antes de todas as rotas?**
+**Resposta:** Ele nunca captura erros das rotas, porque o Express só encontra middlewares de erro que estão DEPOIS da rota que chamou next(erro). Erros passam direto.
+
+---
+
+## 7. Middleware de Terceiros — CORS e Logging Profissional
+
+O ecossistema do Express oferece centenas de middlewares prontos. Você instala com npm, registra com `app.use()`, e ganha funcionalidades sem escrever código.
+
+Dois essenciais para qualquer API:
+
+### cors — Liberando Acesso Cross-Origin
+
+Seu servidor Express roda em `localhost:3000`. Se uma página web em `localhost:5500` tentar acessá-lo via fetch, o navegador bloqueia por segurança (política de mesma origem). O middleware `cors` configura os headers necessários para liberar esse acesso.
+
+```bash
+npm install cors
+```
+
+```javascript
+const cors = require('cors');
+
+// Libera todas as origens (desenvolvimento)
+app.use(cors());
+
+// Ou restringe a origens específicas (produção)
+// app.use(cors({ origin: 'http://meu-frontend.com' }));
+```
+
+Sem o cors, requisições de outros domínios recebem erro no navegador. Com ele, o header `Access-Control-Allow-Origin: *` é adicionado automaticamente.
+
+### morgan — Logging HTTP Profissional
+
+O logging manual com `console.log` funciona, mas `morgan` oferece formato estruturado, cores no terminal e níveis de detalhe.
+
+```bash
+npm install morgan
+```
+
+```javascript
+const morgan = require('morgan');
+
+// Formato dev — colorido, conciso, ideal para desenvolvimento
+app.use(morgan('dev'));
+
+// Formato combined — Apache-style, completo, ideal para produção
+// app.use(morgan('combined'));
+```
+
+Morgan 'dev' mostra método, URL, status code, tempo de resposta e tamanho. 'combined' adiciona IP do cliente, user-agent e referer — o formato padrão dos logs de servidor Apache.
+
+Ambos são middlewares: recebem `req`, `res`, `next` e decidem o que fazer. A diferença é que alguém já escreveu o código para você.
+
+**Mão na Massa — Instalando Middlewares de Terceiros:**
+
+- [ ] No diretório do projeto, execute `npm install cors morgan`
+- [ ] Adicione `const cors = require('cors');` e `const morgan = require('morgan');`
+- [ ] Registre ambos com `app.use(cors())` e `app.use(morgan('dev'))` no início do pipeline
+- [ ] Teste com `curl -v http://localhost:3000/tarefas`
+- [ ] Observe o header `Access-Control-Allow-Origin: *` na resposta
+
+**Verificação:** O terminal mostra logs coloridos do morgan. O curl com `-v` mostra o header CORS na resposta.
+
+### Quick Check 7
+
+**1. Para que serve o middleware cors em uma API?**
+**Resposta:** Ele adiciona headers HTTP que permitem que páginas web de outros domínios acessem a API. Sem ele, o navegador bloqueia requisições cross-origin.
+
+**2. Qual a diferença prática entre os formatos dev e combined do morgan?**
+**Resposta:** dev é colorido e conciso — ideal para desenvolvimento. combined segue o formato Apache com IP, user-agent e referer — ideal para logs de produção.
+
+---
+
+## 8. Projeto Progressivo — Middleware de Logging com Timestamp
+
+Você já tem logging com morgan, mas o valor do aprendizado está em construir seu próprio middleware — e entender exatamente o que cada linha faz.
+
+Vamos criar um middleware que registra **método, URL e timestamp** de cada requisição no formato:
+
+```
+[2026-07-14T19:45:00.000Z] GET /tarefas
+```
+
+O código é simples — você usa `new Date().toISOString()` para o timestamp, `req.method` para o verbo HTTP e `req.url` para o caminho:
+
+```javascript
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.url}`);
+  next();
+});
+```
+
+**Posição no pipeline:** este middleware deve vir depois do `express.json()` (para que o body já esteja parseado caso você queira logá-lo no futuro) mas **antes das rotas** (para que toda requisição seja registrada, incluindo as que derem erro).
+
+A ordem final do pipeline do seu servidor fica:
+
+```mermaid
+flowchart LR
+    REQ["Requisição"] --> CORS["cors<br>Headers CORS"]
+    CORS --> MOR["morgan<br>Logging HTTP"]
+    MOR --> EJ["express.json<br>Body parsing"]
+    EJ --> TS["Timestamp<br>Log customizado"]
+    TS --> ROTAS["Rotas<br>GET POST PUT DELETE"]
+    ROTAS --> ERR["Error Handler<br>500"]
+```
+
+Perceba a lógica de cada posição:
+
+1. **cors primeiro**: headers de segurança precisam estar na resposta o mais cedo possível
+2. **morgan em seguida**: logging profissional antes de qualquer processamento
+3. **express.json antes das rotas**: body precisa estar parseado quando chegar nas rotas
+4. **timestamp antes das rotas**: registra cada requisição, independentemente do resultado
+5. **rotas no centro**: recebem req já processado pelos middlewares anteriores
+6. **error handler por último**: captura qualquer erro de rotas ou middlewares
+
+**Mão na Massa — Middleware de Timestamp:**
+
+- [ ] No `servidor-express.js`, adicione o middleware de timestamp na posição correta: depois de `express.json()` e antes das rotas
+- [ ] Teste com `curl http://localhost:3000/tarefas` e veja o log no terminal
+- [ ] Teste com `curl http://localhost:3000/erro` — o timestamp aparece antes do erro ser capturado?
+- [ ] Compare com o log do morgan — os dois aparecem, mas o formato é diferente
+
+**Verificação:** Cada requisição gera uma linha no terminal no formato `[timestamp] GET /tarefas`. Se o timestamp aparecer antes da rota de erro ser executada, a posição está correta.
+
+### Quick Check 8
+
+**1. Por que o middleware de timestamp deve vir depois do express.json mas antes das rotas?**
+**Resposta:** Depois do express.json para ter acesso ao body parseado se quiser logá-lo. Antes das rotas para registrar todas as requisições, inclusive as que derem erro.
+
+**2. O que a ordem final do pipeline revela sobre o fluxo de uma requisição no Express?**
+**Resposta:** Revela que a requisição passa por uma sequência fixa de middlewares (cors, logging, parsing, timestamp) antes de chegar às rotas, e que qualquer erro é capturado pelo error handler no final.
+
+---
+
+## Autoavaliação: Quiz Rápido
+
+**1. O que é um pipeline de processamento e como ele se aplica a servidores web?**
+**Resposta:**
+
+Um pipeline é uma sequência de funções onde dados passam por estações em ordem, cada uma podendo transformar, passar adiante ou interromper o fluxo. Em servidores web, cada middleware é uma estação que processa a requisição antes dela chegar à rota.
+
+**2. Quais são os três resultados possíveis ao chamar a função next() em um middleware?**
+**Resposta:**
+
+Passar adiante com `next()` (continua o pipeline), interromper ao não chamar `next()` (resposta enviada), ou delegar erro com `next(erro)` (pula para o error handler).
+
+**3. Por que a ordem de registro dos middlewares é importante para o comportamento do servidor?**
+**Resposta:**
+
+Cada middleware vê apenas o que os anteriores processaram. Um middleware de autenticação antes de um de parsing não vê o body parseado. A ordem define o que cada um recebe e o alcance do error handler.
+
+**4. Qual a assinatura de um middleware normal e de um middleware de erro no Express?**
+**Resposta:**
+
+Middleware normal: `(req, res, next)`. Middleware de erro: `(err, req, res, next)` — quatro parâmetros, identificado pela aridade.
+
+**5. O que o middleware express.json() faz internamente com o body da requisição?**
+**Resposta:**
+
+Escuta os eventos data e end, acumula chunks, executa JSON.parse no resultado e coloca o objeto em req.body. É o mesmo processo manual da Aula 06, mas encapsulado em um middleware.
+
+**6. Qual a ordem correta dos middlewares em um servidor Express típico?**
+**Resposta:**
+
+cors primeiro, depois morgan, express.json, middlewares customizados (como timestamp), rotas e error handler por último.
+
+---
+
+## Mão na Massa: Exercícios Graduados
+
+**Exercício 1 (Fácil) — Middleware de Logging Simples**
+
+**Dificuldade:** Fácil | **Duração:** 5 minutos | **Cobre:** Seções 1 a 4
+
+Crie um servidor Express que registra no console o método HTTP e a URL de toda requisição antes de processá-la. Use `app.use()` com um middleware customizado. O servidor deve ter uma rota GET `/` que retorna `"OK"`.
+
+**Gabarito:**
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+app.get('/', (req, res) => res.send('OK'));
+
+app.listen(3000, () => console.log('Servidor na porta 3000'));
+```
+
+Teste com `curl http://localhost:3000` — o terminal mostra `GET /` e o curl recebe "OK".
+
+---
+
+**Exercício 2 (Médio) — Middleware Condicional com Header**
+
+**Dificuldade:** Médio | **Duração:** 10 minutos | **Cobre:** Seções 4, 6
+
+Crie um middleware que adiciona o header `X-Request-Time` com o timestamp ISO da requisição em TODAS as respostas. Use `res.set()` para definir o header. O middleware deve ser registrado antes das rotas.
+
+Dica: `res.set('Nome-Do-Header', 'valor')` define um header na resposta.
+
+**Gabarito:**
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use((req, res, next) => {
+  res.set('X-Request-Time', new Date().toISOString());
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.json({ mensagem: 'Header adicionado!' });
+});
+
+app.listen(3000);
+```
+
+Teste com `curl -v http://localhost:3000` e procure pelo header `X-Request-Time` na resposta.
+
+---
+
+**Desafio (Difícil) — Middleware de Timing com res.on('finish')**
+
+**Dificuldade:** Difícil | **Duração:** 15 minutos | **Cobre:** Seções 4, 6, 8
+
+Crie um middleware que mede o tempo que cada requisição leva para ser processada. Use `Date.now()` no início e, quando a resposta for enviada, calcule a diferença. Para isso, use o evento `finish` do objeto `res` — ele é emitido quando a resposta termina de ser enviada ao cliente.
+
+O log deve mostrar: `GET /tarefas — 12ms`
+
+**Gabarito:**
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use((req, res, next) => {
+  const inicio = Date.now();
+
+  // O evento 'finish' dispara quando a resposta é enviada
+  res.on('finish', () => {
+    const duracao = Date.now() - inicio;
+    console.log(`${req.method} ${req.url} — ${duracao}ms`);
+  });
+
+  next();
+});
+
+app.get('/', (req, res) => res.json({ ok: true }));
+app.get('/demorado', (req, res) => {
+  setTimeout(() => res.json({ ok: true }), 500);
+});
+
+app.listen(3000);
+```
+
+**Explicação do `res.on('finish')`:** O objeto `res` do Express é uma stream que emite o evento `finish` quando todos os dados da resposta foram enviados ao cliente. É um mecanismo do Node.js — mesmo pattern de `req.on('data')` que você viu na Aula 06. Ao escutar esse evento, podemos executar código após a resposta, sem bloquear o envio.
+
+Teste com `curl http://localhost:3000` e `curl http://localhost:3000/demorado`. Compare os tempos no terminal.
+
+---
+
+## Resumo da Aula
+
+### Os 10 Conceitos Fundamentais
+
+1. **Pipeline Pattern**: dados passam por estações em sequência, cada uma pode transformar, passar adiante ou interromper. (Seção 1)
+2. **Contrato next**: função que conecta as estações do pipeline, transferindo o controle para a próxima. (Seção 2)
+3. **Três resultados de next()**: processar e passar, responder e parar, ou delegar erro. (Seção 2)
+4. **Ordem de execução**: cada middleware vê apenas o que os anteriores processaram — a ordem define o comportamento. (Seção 3)
+5. **Error handler por último**: captura erros de todos os middlewares e rotas registrados antes dele. (Seção 3)
+6. **Assinatura do middleware Express**: `(req, res, next)` — a implementação concreta do contrato genérico. (Seção 4)
+7. **app.use()**: registra middlewares no pipeline global do Express. (Seção 4)
+8. **express.json()**: middleware que lê a stream da requisição, acumula chunks e parseia JSON em req.body. (Seção 5)
+9. **Middleware de erro**: `(err, req, res, next)` — 4 parâmetros, registrado por último, captura erros. (Seção 6)
+10. **Middlewares de terceiros**: cors (liberar acesso cross-origin) e morgan (logging profissional) são middlewares prontos que você instala e registra. (Seção 7)
+
+### O Que Você Construiu Hoje
+
+- [x] Middleware de logging que registra método e URL no terminal
+- [x] `express.json()` desvendado — entendimento completo do body parsing
+- [x] Middleware de erro capturando exceções e retornando 500
+- [x] cors + morgan instalados e configurados no servidor
+- [x] Middleware de timestamp com posição correta no pipeline
+- [x] Pipeline final: cors → morgan → express.json → timestamp → rotas → error handler
+
+---
+
+## Próxima Aula
+
+**Aula 09: Validação e Tratamento de Erros**
+
+Você usou middlewares para logging, parsing e timestamp. Agora o passo natural: validar dados de entrada e tratar erros de forma centralizada. A Aula 09 conecta o middleware de erro que você acabou de criar com validação de body — aprendendo a retornar erros claros e consistentes.
+
+---
+
+## Referências
+
+### Documentação Oficial
+
+- [Express.js — Using Middleware](https://expressjs.com/en/guide/using-middleware.html) — guia oficial de middlewares Express
+- [Express.js — express.json()](https://expressjs.com/en/4x/api.html#express.json) — documentação do body parsing middleware
+- [Express.js — Error Handling](https://expressjs.com/en/guide/error-handling.html) — tratamento de erros com middlewares
+
+### Ferramentas
+
+- [cors](https://www.npmjs.com/package/cors) — middleware de Cross-Origin Resource Sharing
+- [morgan](https://www.npmjs.com/package/morgan) — middleware de logging HTTP
+- [Node.js Streams](https://nodejs.org/api/stream.html) — streams do Node.js (o que express.json usa internamente)
+
+### Artigos para Aprofundamento
+
+- [Chain of Responsibility Pattern](https://refactoring.guru/design-patterns/chain-of-responsibility) — o pattern por trás do middleware
+- [Express Middleware: O Pattern que Mudou o Node.js](https://expressjs.com/en/advanced/best-practice-performance.html) — boas práticas com middlewares
+
+---
+
+## FAQ
+
+**P: Posso ter mais de um middleware de erro no mesmo servidor?**
+R: Sim. O Express executa middlewares de erro na ordem de registro. Cada um pode tratar o erro ou passar adiante com `next(err)`.
+
+**P: Qual a diferença entre app.use() e app.get() para registrar middlewares?**
+R: `app.use()` executa para qualquer método HTTP. `app.get()` só responde a GET. `app.use()` também aceita um path opcional: `app.use('/api', middleware)` só executa para URLs que começam com /api.
+
+**P: O que acontece se eu chamar next() depois de res.json()?**
+R: O Express tenta enviar uma segunda resposta — o que gera erro. Sempre que enviar uma resposta, pare a execução com `return` ou `if/else` para evitar chamar next() depois.
+
+**P: express.json() tem limite de tamanho para o body?**
+R: Sim, o padrão é 100kb. Para aumentar, use `express.json({ limit: '10mb' })`. Aumente apenas se necessário — limites altos expõem o servidor a ataques de DoS.
+
+**P: Middleware de erro captura erros de middlewares que vêm depois dele?**
+R: Não. O middleware de erro só captura erros de middlewares e rotas registrados ANTES dele. Por isso fica sempre por último.
+
+**P: Como desabilitar um middleware para rotas específicas?**
+R: Use `app.use('/caminho', middleware)` — o middleware só executa para requisições que começam com aquele caminho. Ou coloque o middleware apenas nas rotas desejadas com `app.get('/rota', middleware, handler)`.
+
+**P: next('route') é diferente de next(err)?**
+R: Sim. `next('route')` pula para a próxima rota que casa com o mesmo path (útil em middlewares de rota). `next(err)` pula para o middleware de erro. São comportamentos distintos.
+
+**P: Middlewares de terceiros podem comprometer a segurança do servidor?**
+R: Sim — todo middleware executa dentro do seu processo. Instale apenas pacotes conhecidos (como cors e morgan, que têm milhões de downloads semanais) e mantenha-os atualizados.
+
+**P: O Express inclui algum middleware por padrão?**
+R: Não. Nem `express.json()` está ativo por padrão — você precisa registrá-lo explicitamente. O Express é propositalmente mínimo; tudo que você precisa além do roteador básico é um middleware que você adiciona.
+
+**P: Como testar se um middleware está sendo executado na ordem correta?**
+R: Adicione `console.log('Middleware X executou')` em cada um. A ordem dos logs no terminal revela a ordem de execução.
+
+---
+
+## Glossário
+
+| Termo | Definição |
+|---|---|
+| **Pipeline** | Sequência de funções onde dados passam por estações de processamento em ordem fixa. (Seção 1) |
+| **Middleware** | Função no pipeline que processa a requisição, podendo modificá-la, responder ou passar adiante via next. (Seção 2) |
+| **next()** | Função de callback que transfere o controle para o próximo middleware no pipeline. (Seção 2) |
+| **Chain of Responsibility** | Pattern onde cada elo decide processar ou passar adiante — middleware é uma implementação concreta. (Seção 3) |
+| **app.use()** | Método que registra um middleware no pipeline global do Express. (Seção 4) |
+| **Aridade** | Número de parâmetros de uma função. Express usa aridade (3 vs 4) para diferenciar middleware normal de middleware de erro. (Seção 6) |
+| **express.json()** | Middleware embutido que lê a stream da requisição, acumula chunks e parseia JSON em req.body. (Seção 5) |
+| **Middleware de Erro** | Middleware com 4 parâmetros (err, req, res, next) que captura erros passados via next(err). (Seção 6) |
+| **cors** | Middleware que adiciona headers de Cross-Origin Resource Sharing para permitir acesso de outros domínios. (Seção 7) |
+| **morgan** | Middleware de logging HTTP com formatos pré-definidos (dev, combined, etc.). (Seção 7) |
+| **req.method** | Propriedade que contém o verbo HTTP da requisição (GET, POST, PUT, DELETE). (Seção 4) |
+| **req.url** | Propriedade que contém o caminho da URL requisitada (ex: /tarefas/5). (Seção 4) |
+```

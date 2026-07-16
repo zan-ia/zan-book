@@ -1,0 +1,8 @@
+flowchart TD
+    PUSH[Push ou Pull Request] --> LINT[Job lint<br/>ESLint]
+    PUSH --> TC[Job typecheck<br/>tsc noEmit]
+    PUSH --> TEST[Job test<br/>Jest coverage]
+    LINT --> BUILD{Job build<br/>tsc}
+    TC --> BUILD
+    TEST --> BUILD
+    BUILD --> GREEN[Pipeline Verde]

@@ -1,0 +1,15 @@
+flowchart LR
+    A[Executar tarefas] --> B[Coletar metricas]
+    B --> C[Detectar padroes]
+    C --> D[Formular hipotese de refinamento]
+    D --> E[Testar hipotese em ambiente isolado]
+    E --> F{A melhoria foi significativa?}
+    F -->|Sim| G[Aplicar refinamento no harness]
+    F -->|Nao| H[Descartar hipotese e registrar aprendizado]
+    G --> I[Monitorar por N execucoes]
+    I --> J{Metrica melhorou?}
+    J -->|Sim| K[Reforcar refinamento]
+    J -->|Nao| L[Reverter refinamento]
+    K --> A
+    L --> A
+    H --> A

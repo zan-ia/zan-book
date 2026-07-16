@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant D as Voce
+    participant A as Agent Mode
+    participant P as Projeto DevFlow
+
+    D->>A: Prompt com descricao do CRUD
+    A->>P: #read copilot-instructions.md
+    A->>P: #read package.json
+    A->>P: #read index.js
+    A-->>A: #todos Planejar passos
+    A->>P: #edit Criar routes/projects.js
+    A->>P: #edit Atualizar index.js com nova rota
+    A->>P: #execute npm start
+    A->>P: #execute curl para testar POST
+    A->>P: #execute curl para testar GET
+    A->>P: #execute curl para testar DELETE
+    A-->>D: Mostra diff de todas as alteracoes
+    D-->>A: Apply (aceitar alteracoes)

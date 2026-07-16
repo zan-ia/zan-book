@@ -1,0 +1,7 @@
+flowchart LR
+    C[Cliente] -->|POST /login| S[Servidor]
+    S -->|Gera token| C
+    C -->|GET /tarefas<br/>Authorization Bearer token| M[Middleware Auth]
+    M -->|Token válido| H[Handler da Rota]
+    M -->|Token inválido| E[401 erro]
+    H -->|req.user disponível| R[Resposta]

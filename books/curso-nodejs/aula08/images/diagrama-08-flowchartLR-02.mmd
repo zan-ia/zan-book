@@ -1,0 +1,9 @@
+flowchart LR
+    REQ["Requisição"] --> L1["Middleware 1<br>Logging"]
+    L1 --> L2["Middleware 2<br>Autenticação"]
+    L2 -->|"Autenticado"| L3["Middleware 3<br>Parsing"]
+    L2 -->|"Falhou"| ERR["Error Handler"]
+    L3 --> L4["Middleware 4<br>Validação"]
+    L4 --> ROTA["Rota Final"]
+    ROTA -->|"OK"| RESP["Resposta"]
+    ROTA -->|"Erro"| ERR

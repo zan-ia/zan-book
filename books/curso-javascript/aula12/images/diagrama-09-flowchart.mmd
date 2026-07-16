@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph Antes
+        A["tarefas = [string, string, string]"]
+    end
+    subgraph Depois
+        B["tarefas = [objeto, objeto, objeto]"]
+    end
+    A --> B
+    B --> C["tarefas[0] = { texto, concluida, prioridade }"]
+    B --> D["tarefas[1] = { texto, concluida, prioridade }"]

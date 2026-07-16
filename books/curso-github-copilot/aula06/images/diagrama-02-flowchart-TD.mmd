@@ -1,0 +1,6 @@
+flowchart TD
+    R[RED: Escreva o teste que falha] -->|Teste falha?| G[GREEN: Implemente o minimo]
+    G -->|Teste passa?| RF[REFACTOR: Melhore com seguranca]
+    RF -->|Ainda ha melhoria?| RF
+    RF -->|Melhoria concluida| R
+    R -->|Teste falha sem implementacao?| G

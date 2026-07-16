@@ -1,0 +1,12 @@
+flowchart LR
+    A[Sem fragmento] --> B[append 1]
+    B --> C[reflow]
+    C --> D[append 2]
+
+    D --> E[reflow]
+    E --> F[... 98 vezes mais]
+    F --> G[100 reflows]
+    H[Com fragmento] --> I[append 100 no fragmento]
+    I --> J[0 reflows]
+    J --> K[append fragmento na arvore]
+    K --> L[1 unico reflow]

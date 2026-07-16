@@ -1,0 +1,9 @@
+flowchart LR
+    A[Programa pausado] --> B[Resume F8]
+    A --> C[Step Over F10]
+    A --> D[Step Into F11]
+    A --> E[Step Out Shift F11]
+    B --> F[Continua ate proximo breakpoint]
+    C --> G[Executa linha atual NAO entra em funcoes]
+    D --> H[Entra DENTRO da funcao chamada]
+    E --> I[Sai da funcao atual]

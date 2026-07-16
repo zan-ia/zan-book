@@ -1,0 +1,6 @@
+flowchart LR
+    CODE["Seu código"] -->|"Solicita leitura"| SO["Sistema Operacional"]
+    SO -->|"Processa em paralelo"| DISK["Disco"]
+    DISK -->|"Retorna dados"| SO
+    SO -->|"Callback na fila"| EV["Event Loop"]
+    EV -->|"Executa quando livre"| CB["Seu callback"]

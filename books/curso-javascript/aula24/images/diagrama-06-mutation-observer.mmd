@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant DOM as Lista de Tarefas
+    participant MO as MutationObserver
+    participant G as Gerenciador
+
+    DOM->>MO: childList mudou
+    MO->>G: Callback com mutations
+    G->>G: Conta addedNodes e removedNodes
+    G->>G: Atualiza contador
+    G->>DOM: Modifica contador
+    Note over G,DOM: Flag evita loop infinito

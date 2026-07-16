@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant D as Design (Figma)
+    participant A as Assistente
+    participant P as Playwright MCP
+    participant B as Browser
+
+    A->>D: Extrair specs do componente
+    D->>A: specs (cores, dimensoes)
+    A->>P: Abrir pagina em http://localhost:5173
+    P->>B: Navegar para /projects
+    B->>P: Pagina carregada
+    P->>A: Browser pronto
+    A->>P: Tirar screenshot do ProjectCard
+    P->>B: Capturar viewport
+    B->>P: Screenshot
+    P->>A: Imagem capturada
+    A->>A: Comparar specs vs screenshot
+    A->>P: Verificar cor do botao (#1A73E8)
+    P->>B: Inspecionar elemento
+    B->>P: CSS computed
+    P->>A: background-color: #1A73E8
+    A->>A: Validar: OK

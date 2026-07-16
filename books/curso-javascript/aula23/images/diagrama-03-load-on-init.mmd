@@ -1,0 +1,14 @@
+flowchart TD
+    Init[Pagina carrega] --> Load[connectedCallback]
+    Load --> Carrega[localStorage getItem]
+    Carrega --> Popula[Array tarefas populado]
+    Popula --> Renderiza[Renderizar lista]
+    Renderiza --> Aguarda[Aguard acao do usuario]
+    Aguarda --> Adicionar[Adicionar tarefa]
+    Aguarda --> Alternar[Alternar status]
+    Aguarda --> Remover[Remover tarefa]
+    Adicionar --> Salva[localStorage setItem]
+    Alternar --> Salva
+    Remover --> Salva
+    Salva --> Renderiza2[Re-renderizar]
+    Renderiza2 --> Aguarda

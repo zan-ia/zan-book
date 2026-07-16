@@ -1,0 +1,10 @@
+flowchart TD
+    UL[ul pai --- UM listener] -->|clique| E1[li 1]
+    UL --> E2[li 2]
+    UL --> E3[li 3]
+    UL --> EN[li N]
+    E1 -->|bubbling sobe ate o ul| UL
+    E2 -->|bubbling| UL
+    E3 -->|bubbling| UL
+    EN -->|bubbling| UL
+    UL -->|event target identifica qual li| DECISAO{Qual li?}

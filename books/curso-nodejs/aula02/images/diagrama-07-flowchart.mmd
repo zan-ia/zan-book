@@ -1,0 +1,6 @@
+flowchart LR
+    A["npm start"] --> B["prestart<br/>(echo preparação)"]
+    B --> C["start<br/>(node index.js)"]
+    C --> D["poststart<br/>(echo confirmação)"]
+    style A fill:#4a90d9,color:#fff
+    style C fill:#27ae60,color:#fff

@@ -1,0 +1,8 @@
+flowchart LR
+    A[Arvore Original] --> B[Estado Inicial]
+    C[Criar peca] --> D[Inserir]
+    D --> E[Nova Arvore]
+    A -- clonar --> F[Peca clonada]
+    F --> D
+    G[Mover peca] --> H[Arvore Reorganizada]
+    I[Remover peca] --> J[Arvore Reduzida]

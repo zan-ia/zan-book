@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph Sincrono
+        A1[Cliente A chega] --> A2[Anota pedido] --> A3[Espera na cozinha] --> A4[Entrega prato] --> A5[Cliente B chega]
+    end
+
+    subgraph Assincrono
+        B1[Cliente A chega] --> B2[Anota pedido] --> B3[Envia para cozinha] --> B4[Atende cliente B]
+        B3 --> C1{Cozinha prepara}
+        C1 --> C2[Campainha toca] --> B5[Entrega prato A]
+    end

@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant App as App
+    participant EE as EventEmitter
+    participant L1 as Listener A
+    participant L2 as Listener B
+    App->>EE: on('progresso', L1)
+    App->>EE: on('progresso', L2)
+    App->>EE: once('concluido', cleanUp)
+    Note over EE: Durante execucao
+    App->>EE: emit('progresso', {etapa, percentual})
+    EE->>L1: callback({etapa, percentual})
+    EE->>L2: callback({etapa, percentual})
+    Note over EE: Ao final
+    App->>EE: emit('concluido')
+    EE->>L1: callback() (apenas 1x)

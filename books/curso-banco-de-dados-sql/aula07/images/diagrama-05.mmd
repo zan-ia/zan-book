@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant C as Cliente (Frontend)
+    participant S as Servidor (Backend)
+
+    C->>S: POST /login (email, senha)
+    S->>S: Verifica credenciais
+    S-->>C: token
+
+    C->>S: GET /tarefas (Authorization: Bearer token)
+    S->>S: Verifica assinatura do token
+    S-->>C: Dados do usuário
+
+    Note over C,S: Token é autossuficiente — servidor não armazena estado

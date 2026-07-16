@@ -1,0 +1,9 @@
+flowchart TD
+    ERR["Erro capturado pelo middleware"] --> APP{"err instanceof<br>AppError?"}
+    APP -->|Sim| APP_OK["Usa err.statusCode<br>e err.message"]
+    APP -->|Não| SYN{"err instanceof<br>SyntaxError?"}
+    SYN -->|Sim| SYN_OK["Retorna 400<br>JSON malformado"]
+    SYN -->|Não| GEN["Retorna 500<br>Mensagem genérica"]
+    APP_OK --> RESP["Resposta JSON com erro"]
+    SYN_OK --> RESP
+    GEN --> RESP

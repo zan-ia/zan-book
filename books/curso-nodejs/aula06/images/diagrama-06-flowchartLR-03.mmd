@@ -1,0 +1,5 @@
+flowchart LR
+    CLIENT["Cliente"] -->|"GET /"| SERVER["createServer callback"]
+    SERVER --> HEAD["res.writeHead(200, headers)"]
+    HEAD --> BODY["res.end('conteúdo')"]
+    BODY --> RESPONSE["Resposta HTTP"]

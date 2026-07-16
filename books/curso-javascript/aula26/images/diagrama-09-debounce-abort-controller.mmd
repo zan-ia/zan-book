@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant U as Usuario
+    participant D as Debounce
+    participant C as AbortController
+    participant DB as IndexedDB
+
+    U->>D: Digita "tar"
+    D->>D: Inicia timer 300ms
+    U->>D: Digita "tare"
+    D->>D: Cancela timer anterior
+    D->>D: Inicia novo timer 300ms
+    U->>D: Digita "tarefa"
+    D->>D: Cancela timer anterior
+    D->>D: Inicia novo timer 300ms
+    Note over D: 300ms se passam sem digitacao
+    D->>C: Aborta consulta anterior
+    C->>DB: Nova consulta com signal
+    DB->>DB: Verifica signal.aborted a cada etapa
+    DB->>U: Renderiza resultados de "tarefa"

@@ -1,0 +1,7 @@
+flowchart LR
+    C[Cliente] -->|PUT tarefas 10| A[Middleware Auth]
+    A -->|req.user id 5| B[Middleware Autorizar]
+    B -->|tarefa 10 user_id 5| D[Controller]
+    B -->|tarefa 10 user_id 3| E[403 Proibido]
+    D -->|userId 5| F[Repository]
+    F -->|WHERE id 10 AND user_id 5| G[Banco]

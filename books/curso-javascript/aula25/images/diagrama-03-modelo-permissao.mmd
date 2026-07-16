@@ -1,0 +1,7 @@
+flowchart LR
+    A[Site solicita API] --> B{Navegador pergunta}
+    B -->|Usuario permite| C[Permitido]
+    B -->|Usuario nega| D[Negado]
+    B -->|Usuario ignora| E[Padrao - Pergunta de novo]
+    C --> F[API disponivel]
+    D --> G[API bloqueada]

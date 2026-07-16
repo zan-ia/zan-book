@@ -1,0 +1,7 @@
+flowchart LR
+    F[FONTE Readable] -->|pipe| T1[Transformacao 1]
+    T1 -->|pipe| T2[Transformacao 2]
+    T2 -->|pipe| D[DESTINO Writable]
+    F -.->|backpressure| T1
+    T1 -.->|backpressure| T2
+    T2 -.->|backpressure| D

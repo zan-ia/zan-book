@@ -1,0 +1,10 @@
+flowchart TD
+    A[Call Stack executa] --> B{Stack vazia}
+    B -->|Nao| A
+    B -->|Sim| C{Microtask Queue}
+    C -->|Tem tarefas| D[Processa UMA microtask]
+    D --> C
+    C -->|Vazia| E{Macrotask Queue}
+    E -->|Tem tarefa| F[Processa UMA macrotask]
+    F --> A
+    E -->|Vazia| A

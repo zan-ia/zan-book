@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph SemModulos[Sem Modulos]
+        S1[script src=utils.js] --> G[Escopo Global window]
+        S2[script src=helpers.js] --> G
+        S3[script src=app.js] --> G
+        G --> C1[Colisão<br/>Sobrescrita<br/>Ordem frágil]
+    end
+    subgraph ComModulos[Com Modulos]
+        M1[utils.js] --> P1[Escopo Privado]
+        M2[helpers.js] --> P2[Escopo Privado]
+        M3[app.js] --> P3[Escopo Privado]
+        P1 --> API[Exportação Controlada]
+        P2 --> API
+        P3 --> API
+    end

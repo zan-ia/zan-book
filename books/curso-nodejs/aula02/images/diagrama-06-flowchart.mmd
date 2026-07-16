@@ -1,0 +1,9 @@
+flowchart LR
+    A["npm install cowsay"] --> B["Consulta Registry"]
+    B --> C["Baixa pacote"]
+    C --> D["Cria node_modules/"]
+    D --> E["Adiciona em dependencies<br/>no package.json"]
+    E --> F["Gera package-lock.json"]
+    F --> G["Pronto!"]
+    style A fill:#4a90d9,color:#fff
+    style G fill:#27ae60,color:#fff

@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph Concepção
+        A[Prompt Inicial] --> B[Refino de Prompt]
+        B --> C[Geração de Design]
+        C --> D[Iteração de Design]
+    end
+    subgraph Documentação
+        D --> E[Documentação do Design]
+        E --> F[Extração de Código]
+    end
+    subgraph Implementação
+        F --> G[Conversao para Componente]
+        G --> H[Integração com Biblioteca]
+        H --> I[Validação Visual]
+    end

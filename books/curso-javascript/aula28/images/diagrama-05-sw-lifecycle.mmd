@@ -1,0 +1,9 @@
+flowchart LR
+    A[Pagina] -->|register| B[Registrado]
+    B -->|Navegador baixa sw.js| C[Instalando]
+    C -->|install event| D[Instalado]
+    D -->|Aguardando paginas antigas| E[Espera<br>Waiting]
+    E -->|Todas abas fechadas| F[Ativado]
+    F -->|activate event| G[Pronto]
+    G -->|fetch event| H[Intercepta<br>Requisicoes]
+    H -->|Arquivo sw.js muda| C

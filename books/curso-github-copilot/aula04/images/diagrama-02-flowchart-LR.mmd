@@ -1,0 +1,30 @@
+flowchart LR
+    subgraph Inicio[Sessao no inicio]
+        P1[Projeto] --> M1[Modelo]
+        I1[Instrucoes] --> M1
+        Q1[Pergunta] --> M1
+        M1 --> R1[Resposta rapida e precisa]
+    end
+
+    subgraph Meio[Sessao apos 50 mensagens]
+        P2[Projeto] --> M2[Modelo]
+        I2[Instrucoes] --> M2
+        Q2[Pergunta] --> M2
+        H2[5 perguntas anteriores] --> M2
+        R2[5 respostas anteriores] --> M2
+        T2[10 tool calls] --> M2
+        C2[Correcoes e ajustes] --> M2
+        M2 --> R2Res[Resposta mais lenta e generica]
+    end
+
+    subgraph Fim[Sessao apos 150 mensagens]
+        P3[Projeto] --> M3[Modelo]
+        I3[Instrucoes] --> M3
+        Q3[Pergunta] --> M3
+        H3[30 perguntas anteriores] --> M3
+        R3[30 respostas anteriores] --> M3
+        T3[60 tool calls] --> M3
+        C3[Correcoes e ajustes] --> M3
+        M3 --> R3Res[Resposta lenta e imprecisa]
+        M3 -.-> E3[Modelo esquece instrucoes iniciais]
+    end

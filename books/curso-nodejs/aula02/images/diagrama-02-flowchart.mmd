@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph SEM["Sem Gerenciador"]
+        A1["Projeto A"] --> F1["cópia manual"]
+        A2["Projeto B"] --> F2["cópia manual"]
+        A3["Projeto C"] --> F3["cópia manual"]
+    end
+    subgraph COM["Com Gerenciador"]
+        B1["Projeto A"] --> C["Catálogo Central<br/>(versões 1.0.0 a 2.3.1)"]
+        B2["Projeto B"] --> C
+        B3["Projeto C"] --> C
+    end
+    style SEM fill:#ff6b6b33
+    style COM fill:#51cf6633

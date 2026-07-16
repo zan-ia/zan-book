@@ -1,0 +1,11 @@
+flowchart LR
+    subgraph Ambientes
+        A[Dev 1<br/>coluna prioridade] 
+        B[Dev 2<br/>coluna prioridade + urgente]
+        C[Staging<br/>coluna faltando]
+        D[Produção<br/>sem alterações]
+    end
+    A -- "código novo chega" --> C
+    B -- "merge falha" --> C
+    C -- "deploy quebra" --> D
+    C -- "500 - coluna inexistente" --> C

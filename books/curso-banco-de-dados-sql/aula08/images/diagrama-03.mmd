@@ -1,0 +1,8 @@
+flowchart TD
+    A[Tentar deletar usuario com tarefas] --> B{ON DELETE}
+    B --> C[CASCADE]
+    B --> D[RESTRICT]
+    B --> E[SET NULL]
+    C --> F[Deleta usuario E tarefas]
+    D --> G[Erro: não pode deletar]
+    E --> H[Seta user_id como NULL]

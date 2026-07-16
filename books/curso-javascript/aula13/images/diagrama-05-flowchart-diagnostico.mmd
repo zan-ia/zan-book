@@ -1,0 +1,9 @@
+flowchart TD
+    Inicio[Encontrou um this no codigo] --> P1{Eh arrow function?}
+    P1 -->|Sim| R1[this vem do escopo onde a funcao foi criada]
+    P1 -->|Nao| P2{A funcao foi chamada com ponto?}
+    P2 -->|Sim, objeto.metodo| R2[this = objeto antes do ponto]
+    P2 -->|Nao, funcao solta| R3[this = objeto global / undefined em strict mode]
+    R1 --> Fim[Diagnostico concluido]
+    R2 --> Fim
+    R3 --> Fim

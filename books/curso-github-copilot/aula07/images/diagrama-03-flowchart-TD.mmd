@@ -1,0 +1,10 @@
+flowchart TD
+    COMMIT[Commit/Push] --> LINT{Lint<br/>zero warnings}
+    LINT -->|passou| TYPE{Typecheck<br/>sem erros}
+    LINT -->|falhou| FAIL1[FAIL]
+    TYPE -->|passou| COV{Cobertura<br/>maior ou igual 80}
+    TYPE -->|falhou| FAIL2[FAIL]
+    COV -->|passou| SEC{Seguranca<br/>sem alerts}
+    COV -->|falhou| FAIL3[FAIL]
+    SEC -->|passou| BUILD[Build]
+    SEC -->|falhou| FAIL4[FAIL]

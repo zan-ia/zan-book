@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant App as Seu Código
+    participant Emitter as Emissor
+    participant L1 as Ouvinte A
+    participant L2 as Ouvinte B
+    App->>Emitter: on('dados-prontos', L1)
+    App->>Emitter: on('dados-prontos', L2)
+    Note over Emitter: Mais tarde...
+    App->>Emitter: emit('dados-prontos', dados)
+    Emitter->>L1: Callback(dados)
+    Emitter->>L2: Callback(dados)

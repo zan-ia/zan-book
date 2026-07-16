@@ -1,0 +1,8 @@
+flowchart LR
+    A["console.log síncrono"] --> B["setTimeout agenda timer"]
+    B --> C["console.log síncrono"]
+    C --> D["Timer expira (2s)"]
+    D --> E["Callback vai para Task Queue"]
+    E --> F["Event Loop: Stack vazia?"]
+    F -->|"Sim"| G["Callback executa"]
+    F -->|"Não"| F

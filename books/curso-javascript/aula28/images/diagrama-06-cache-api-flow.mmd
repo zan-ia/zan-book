@@ -1,0 +1,11 @@
+flowchart LR
+    A[caches.open<br>gerenciador-v1] --> B[Cache vazio]
+    B --> C[cache.addAll<br>Assets estaticos]
+    C --> D[Cache populado<br>HTML CSS JS imagens]
+    D --> E[Requiscao chega]
+    E --> F[cache.match<br>request]
+    F --> G{Tem no cache}
+    G -->|Sim| H[Retorna do cache<br>Instantaneo]
+    G -->|Nao| I[fetch da rede]
+    I --> J[cache.put<br>Armazena copia]
+    J --> K[Retorna resposta]

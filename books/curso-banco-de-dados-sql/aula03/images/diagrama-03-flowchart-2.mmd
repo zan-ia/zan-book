@@ -1,0 +1,8 @@
+flowchart LR
+    subgraph Aplicação
+        Service -->|"interface: listar()<br/>buscarPorId()<br/>criar()<br/>atualizar()<br/>remover()"| Repository
+    end
+    subgraph Infraestrutura
+        Repository -->|"usa a tabela<br/>mas não sabe<br/>como foi criada"| Tabela[(Banco de Dados)]
+        Migration -.->|"cria a tabela"| Tabela
+    end

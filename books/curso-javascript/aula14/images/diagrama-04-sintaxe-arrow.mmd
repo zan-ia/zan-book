@@ -1,0 +1,13 @@
+flowchart TD
+    Inicio[Quantos parametros?]
+    Inicio -->|Zero| A[Parenteses obrigatorios]
+    Inicio -->|Um| B[Parenteses opcionais]
+    Inicio -->|Dois ou mais| C[Parenteses obrigatorios]
+    A --> D[Corpo simples?]
+    B --> D
+    C --> D
+    D -->|Sim, expressao unica| E[Retorno implicito: sem chaves]
+    D -->|Nao, multiplas linhas| F[Chaves + return explicito]
+    E --> G[Retorna objeto?]
+    G -->|Sim| H[Envolver objeto em parenteses]
+    G -->|Nao| I[OK: expressao retornada]

@@ -1,0 +1,6 @@
+flowchart LR
+    CODE["Seu código"] -->|"fs.readFile"| SO["Sistema Operacional"]
+    SO -->|"Processa em paralelo"| DISK["Disco"]
+    DISK -->|"Retorna dados"| SO
+    SO -->|"Callback na fila"| EV["Event Loop"]
+    EV -->|"Executa quando livre"| CB["Callback (err, data)"]

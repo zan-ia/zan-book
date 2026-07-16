@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant C as Seu Código
+    participant EL as Event Loop
+    participant SO as Sistema Operacional
+    
+    C->>EL: setTimeout(fn, 1000)
+    EL->>SO: Agenda timer de 1s
+    C->>EL: console.log("A")
+    EL->>C: Executa imediatamente
+    Note over C,SO: Passa 1 segundo...
+    SO->>EL: Timer expirou!
+    EL->>C: Executa callback fn()

@@ -1,0 +1,7 @@
+flowchart TD
+    P1[Os dados precisam sobreviver ao F5] -->|Nao| M[Memoria: variavel em RAM]
+    P1 -->|Sim| P2[Dados estruturados com consultas por campo]
+    P2 -->|Nao| S[Storage: chave-valor ate 5MB]
+    P2 -->|Sim| P3[Volume maior que 5MB]
+    P3 -->|Nao| S
+    P3 -->|Sim| D[Database: indices e transacoes]

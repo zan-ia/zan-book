@@ -1,0 +1,5 @@
+flowchart TD
+    REQ["Requisição"] --> DECIDE{"req.url"}
+    DECIDE -->|"/"| HOME["200 text/html"]
+    DECIDE -->|"/sobre"| SOBRE["200 application/json"]
+    DECIDE -->|"outro"| NOTFOUND["404 text/plain"]

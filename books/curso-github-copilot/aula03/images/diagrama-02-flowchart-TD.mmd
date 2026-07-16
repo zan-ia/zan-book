@@ -1,0 +1,6 @@
+flowchart TD
+    P[Qual o nivel de permissao ideal?] --> Q1[Confio no resultado<br/>sem ver cada passo?]
+    Q1 -- Nao --> D[Default Approvals<br/>Vejo e aprovo cada acao]
+    Q1 -- Sim --> Q2[Confio nos arquivos<br/>que o agente ja editou?]
+    Q2 -- Nao --> B[Bypass Approvals<br/>Arquivos conhecidos OK<br/>Arquivos novos pergunto]
+    Q2 -- Sim --> A[Autopilot<br/>Zero confirmacoes<br/>So reviso no final]

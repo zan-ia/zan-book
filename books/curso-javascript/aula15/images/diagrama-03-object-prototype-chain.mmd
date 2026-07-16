@@ -1,0 +1,7 @@
+flowchart TD
+    obj["obj = {}"] --> objProto["Object.prototype"]
+    objProto --> nullNode["null"]
+    objProto --> methods["toString() aqui!"]
+    obj -.-> busca["JS busca toString()"]
+    busca -- "nao tem em obj" --> objProto
+    objProto -- "tem! retorna" --> resultado["[Function: toString]"]

@@ -1,0 +1,9 @@
+flowchart LR
+    A[Codigo JS: setTimeout fn 0] --> B[Web API Timer]
+    B --> C{Apos 0ms}
+    C --> D[Callback vai para Macrotask Queue]
+    D --> E{Call Stack vazia}
+    E -->|Sim| F[Move callback para Stack]
+    F --> G[Executa callback]
+    E -->|Nao| H[Aguarda Stack esvaziar]
+    H --> E

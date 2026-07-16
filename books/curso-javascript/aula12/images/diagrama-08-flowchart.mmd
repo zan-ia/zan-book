@@ -1,0 +1,14 @@
+flowchart TD
+    A[Objeto] --> B{Quer saber o que?}
+    B --> C[Chave existe?]
+    B --> D[Quais as chaves?]
+    B --> E[Quais os valores?]
+    B --> F[Quais pares?]
+    C --> G[Usar in]
+    C --> H[Propria? Usar hasOwnProperty]
+    D --> I[Object.keys]
+    E --> J[Object.values]
+    F --> K[Object.entries]
+    I --> L[Array de strings]
+    J --> M[Array de valores]
+    K --> N[Array de arrays]

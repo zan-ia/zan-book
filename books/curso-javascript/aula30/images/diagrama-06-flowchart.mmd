@@ -1,0 +1,13 @@
+flowchart TD
+    Inicio --> Try[try: executa operacao]
+    Try -->|Sucesso| Finally[finally: executa SEMPRE]
+    Try -->|Erro| Catch[catch: captura e trata erro]
+    Catch --> Finally
+    Finally --> Continue[Continua apos try catch finally]
+    Try -->|return dentro do try| FinallyBeforeReturn[finally executa ANTES do return]
+    FinallyBeforeReturn --> Return[return efetivado]
+
+    style Try fill:#90EE90,stroke:#333
+    style Catch fill:#FFB6C1,stroke:#333
+    style Finally fill:#ADD8E6,stroke:#333
+    style FinallyBeforeReturn fill:#ADD8E6,stroke:#333

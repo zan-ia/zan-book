@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph Antes[No início do arquivo]
+        A1[exports] --> B1[Objeto Original]
+        A2[module.exports] --> B1
+    end
+    subgraph Depois[exports = novoObjeto]
+        C1[exports] --> D1[Novo Objeto]
+        C2[module.exports] --> D2[Objeto Original vazio]
+        D2 --> E[require retorna objeto vazio!]
+    end

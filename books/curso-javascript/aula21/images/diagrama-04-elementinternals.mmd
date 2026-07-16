@@ -1,0 +1,8 @@
+flowchart LR
+    A[Custom Element] --> B[static formAssociated = true]
+    B --> C[attachInternals no constructor]
+    C --> D[ElementInternals]
+    D --> E[setFormValue define o valor]
+    D --> F[setValidity define validacao]
+    E --> G[FormData do formulario pai]
+    F --> H[Constraint Validation do formulario pai]

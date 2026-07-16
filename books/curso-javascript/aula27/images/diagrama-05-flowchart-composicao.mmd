@@ -1,0 +1,32 @@
+flowchart TD
+    subgraph Entrada
+        P1[Promessa 1]
+        P2[Promessa 2]
+        P3[Promessa 3]
+    end
+
+    subgraph all[Promise.all - Todas]
+        A1[Espera TODAS] --> A2[Todas cumpridas?]
+        A2 -->|Sim| A3[Array com todos os resultados]
+        A2 -->|Nao| A4[Rejeita no primeiro erro]
+    end
+
+    subgraph race[Promise.race - Primeira]
+        R1[Primeira que terminar] --> R2[Resultado da primeira]
+    end
+
+    subgraph allSettled[Promise.allSettled - Cada uma]
+        S1[Espera TODAS] --> S2[Array com status de cada uma]
+        S2 --> S3["{status: fulfilled, value: ...}"]
+        S2 --> S4["{status: rejected, reason: ...}"]
+    end
+
+    P1 --> all
+    P2 --> all
+    P3 --> all
+    P1 --> race
+    P2 --> race
+    P3 --> race
+    P1 --> allSettled
+    P2 --> allSettled
+    P3 --> allSettled

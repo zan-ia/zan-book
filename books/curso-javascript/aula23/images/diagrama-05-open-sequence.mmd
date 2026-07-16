@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant App as Seu codigo
+    participant IDB as IndexedDB
+    participant DB as Banco no Disco
+
+    App->>IDB: indexedDB.open(gerenciador-db, 1)
+    IDB->>DB: Verificar versao
+    DB-->>IDB: Versao atual: 0 (inexistente)
+
+    IDB->>App: onupgradeneeded
+    App->>DB: createObjectStore(tarefas)
+    App->>DB: createIndex(status)
+    App->>DB: createIndex(dataCriacao)
+
+    DB-->>IDB: Upgrade concluido
+    IDB->>App: onsuccess
+    App->>App: db pronto para uso

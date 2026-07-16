@@ -1,0 +1,11 @@
+flowchart LR
+    CMD["node app.js --arquivo=tarefas.json --verbose"] --> PARSE["parseArgs(process.argv)"]
+    PARSE --> ARGS["{ arquivo: 'tarefas.json', verbose: true }"]
+    ARGS --> FACTORY["criarCli(config)"]
+    FACTORY --> VALIDATE["Valida arquivo"]
+    VALIDATE --> RESOLVE["path.resolve()"]
+    RESOLVE --> EMITTER["Cria EventEmitter"]
+    EMITTER --> API["Retorna { on, iniciar }"]
+    API --> START["cli.iniciar()"]
+    START --> READ["fs.readFile()"]
+    READ --> EVENTS["Emitter: inicio, log, dados-carregados, concluido"]

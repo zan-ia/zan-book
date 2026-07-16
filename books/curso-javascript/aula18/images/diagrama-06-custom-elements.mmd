@@ -1,0 +1,7 @@
+flowchart LR
+    A["Classe JS\n(extends HTMLElement)"]
+    B["customElements.define\n(e-tarefa, Classe)"]
+    C["Tag HTML\n<e-tarefa>"]
+    D["connectedCallback\né chamado"]
+    E["Elemento vivo\nno DOM"]
+    A --> B --> C --> D --> E

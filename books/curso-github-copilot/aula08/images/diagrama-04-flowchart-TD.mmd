@@ -1,0 +1,10 @@
+flowchart TD
+    PUSH[Push ou PR] --> LINT[Job lint<br/>ESLint]
+    PUSH --> TC[Job typecheck<br/>tsc noEmit]
+    PUSH --> TEST[Job test<br/>Jest coverage]
+    LINT --> BUILD[Job build<br/>npm run build]
+    TC --> BUILD
+    TEST --> BUILD
+    BUILD --> E2E[Job e2e-tests<br/>Playwright]
+    E2E --> GREEN[Pipeline Verde]
+    E2E --> |falha| ARTIFACTS[Screenshots<br/>como artefatos]

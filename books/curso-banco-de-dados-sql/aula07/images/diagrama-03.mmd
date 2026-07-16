@@ -1,0 +1,4 @@
+flowchart LR
+    S[Senha texto puro] --> H[Função Hash]
+    H --> R[Hash 60 caracteres]
+    R -->|Unidirecional| N[Não volta ao texto original]

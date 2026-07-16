@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph SessaoA[Sessao de Projetos - Fechada]
+        P[CRUD de Projetos<br/>Aula 03] --> ADR1[ADR-001 Stack]
+        P --> ADR2[ADR-002 Modelagem]
+    end
+
+    subgraph Artefatos[Artefatos no repositorio]
+        ADR1
+        ADR2
+        CI[copilot-instructions.md]
+    end
+
+    subgraph SessaoB[Nova sessao - Contexto limpo]
+        A[Novo agente] -->|Le| ADR1
+        A -->|Le| ADR2
+        A -->|Le| CI
+        A -->|Implementa| T[CRUD de Tarefas<br/>consistente com Projetos]
+    end
+
+    Artefatos --> SessaoB

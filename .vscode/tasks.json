@@ -1,0 +1,75 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Harness: Initialize state directory",
+			"type": "shell",
+			"command": "mkdir -p .pocket_harness && touch .pocket_harness/trajectory.jsonl .pocket_harness/metrics-history.jsonl .pocket_harness/failures.json .pocket_harness/session-metrics.json && echo 'Harness state directory initialized.'",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Show metrics dashboard",
+			"type": "shell",
+			"command": "mkdir -p .pocket_harness && touch .pocket_harness/metrics-history.jsonl && node .github/scripts/harness-metrics.js",
+			"group": "test",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Check quality gates",
+			"type": "shell",
+			"command": "node .github/scripts/check-quality-gates.js",
+			"group": "test",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Detect failures",
+			"type": "shell",
+			"command": "node .github/scripts/failure-detector.js",
+			"group": "test",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Run all refiners",
+			"type": "shell",
+			"command": "node .github/scripts/prompt-refiner.js && node .github/scripts/skill-refiner.js && node .github/scripts/subagent-refiner.js && node .github/scripts/memory-refiner.js",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Refine prompts",
+			"type": "shell",
+			"command": "node .github/scripts/prompt-refiner.js",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Refine skills",
+			"type": "shell",
+			"command": "node .github/scripts/skill-refiner.js",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Refine subagents",
+			"type": "shell",
+			"command": "node .github/scripts/subagent-refiner.js",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Harness: Refine memory",
+			"type": "shell",
+			"command": "node .github/scripts/memory-refiner.js",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Repo: Show git status",
+			"type": "shell",
+			"command": "git status --short || echo 'Not a git repository'",
+			"group": "none",
+			"problemMatcher": []
+		}
+	]
+}

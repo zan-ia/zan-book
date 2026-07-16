@@ -1,0 +1,8 @@
+flowchart LR
+    A[Chef Principal<br>Thread Principal] -->|Delega tarefa| B[Chef de Massas<br>Worker 1]
+    A -->|Delega tarefa| C[Chef de Grelhados<br>Worker 2]
+    A -->|Delega tarefa| D[Chef de Sobremesas<br>Worker 3]
+    B -->|Mensagem: Pronto| A
+    C -->|Mensagem: Pronto| A
+    D -->|Mensagem: Pronto| A
+    A -->|Entrega| E[Cliente Atendido<br>UI Responsiva]
