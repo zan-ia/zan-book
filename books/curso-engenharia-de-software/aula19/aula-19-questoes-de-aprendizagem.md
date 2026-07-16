@@ -209,7 +209,7 @@ router.get('/admin/users', (req, res) => {
 1. Instale o pre-commit (`pip install pre-commit` ou `brew install pre-commit`)
 2. Crie o arquivo `.pre-commit-config.yaml` com Gitleaks e detect-private-key
 3. Execute `pre-commit install` para ativar os hooks
-4. Crie um arquivo de teste com uma chave de API fictícia (ex.: `API_KEY = "sk_live_xxx_placeholder"`)
+4. Crie um arquivo de teste com uma chave de API fictícia (ex.: `API_KEY = "sk_live_SEU_TOKEN_AQUI"`)
 5. Tente commitar e veja o bloqueio do Gitleaks
 6. Remova o secret, mova para `.env` e adicione ao `.gitignore`, depois commite com sucesso
 7. Crie um `.env.example` documentando as variáveis
