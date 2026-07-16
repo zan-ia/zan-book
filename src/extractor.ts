@@ -65,6 +65,7 @@ interface ZanBookConfig {
   llm?: {
     provider?: "openai" | "anthropic";
     model?: string;
+    baseURL?: string;
     temperature?: number;
     maxRetries?: number;
   };
@@ -749,6 +750,7 @@ async function getDefaultLlmConfig(): Promise<LlmProviderConfig> {
   return {
     provider: config.llm?.provider ?? "openai",
     model: config.llm?.model ?? "gpt-4o-mini",
+    baseURL: config.llm?.baseURL,
     temperature: config.llm?.temperature ?? 0,
     maxRetries: config.llm?.maxRetries ?? 3,
   };

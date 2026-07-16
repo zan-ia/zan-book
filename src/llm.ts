@@ -37,6 +37,8 @@ export interface LlmProviderConfig {
   provider: "openai" | "anthropic";
   model: string;
   apiKey?: string;
+  /** Base URL for API requests. Used for OpenRouter-compatible endpoints. */
+  baseURL?: string;
   temperature?: number;
   maxRetries?: number;
 }
@@ -167,21 +169,26 @@ export class OpenAiLlmProvider implements LlmProvider {
   readonly config: LlmProviderConfig;
 
   constructor(config: LlmProviderConfig) {
-    const apiKey = config.apiKey ?? process.env.OPENAI_API_KEY;
+    const apiKey = config.apiKey ?? process.env.OPENAI_API_KEY ?? process.env.OPENROUTER_API_KEY;
+
     if (!apiKey) {
       throw new LlmConfigurationError(
-        "OpenAI API key not provided. Set OPENAI_API_KEY environment variable or pass apiKey in config.",
+        "OpenAI/OpenRouter API key not provided. Set OPENAI_API_KEY or OPENROUTER_API_KEY environment variable.",
       );
     }
 
     this.config = {
       ...config,
       apiKey,
+      baseURL: config.baseURL ?? process.env.OPENROUTER_BASE_URL ?? undefined,
       temperature: config.temperature ?? 0,
       maxRetries: config.maxRetries ?? 3,
     };
 
-    this.client = new OpenAI({ apiKey });
+    this.client = new OpenAI({
+      apiKey,
+      baseURL: this.config.baseURL,
+    });
   }
 
   async extractAnnotations(contentMd: string, previousError?: string): Promise<Annotation[]> {

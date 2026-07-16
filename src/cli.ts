@@ -41,6 +41,7 @@ interface ZanBookConfig {
   llm?: {
     provider?: "openai" | "anthropic";
     model?: string;
+    baseURL?: string;
     temperature?: number;
     maxRetries?: number;
   };
