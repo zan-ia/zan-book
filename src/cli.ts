@@ -9,7 +9,7 @@
  * - `zanbook generate`  — Generate DOCX/PDF from extracted data
  */
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -253,12 +253,32 @@ program
         console.log(chalk.green(`\n✅ DOCX generated: ${finalOutput}`));
         console.log(chalk.dim(`  Size: ${(docxBuffer.length / 1024).toFixed(1)} KB`));
       } else if (format === "pdf") {
-        console.error(chalk.yellow("\n⚠️ PDF conversion is not yet implemented (see Issue #6)."));
-        // Fall back to DOCX output
-        const docxOutput = finalOutput.replace(/\.pdf$/i, ".docx");
-        await writeFile(docxOutput, docxBuffer);
-        console.log(chalk.green(`\n✅ DOCX generated instead: ${docxOutput}`));
-        console.log(chalk.dim(`  Size: ${(docxBuffer.length / 1024).toFixed(1)} KB`));
+        // Write temporary DOCX, then convert via pandoc
+        const tempDocx = join(outputDir, `${book.id}.tmp.docx`);
+        await writeFile(tempDocx, docxBuffer);
+        console.log(chalk.yellow("  Converting DOCX to PDF via pandoc..."));
+
+        const { convertToPdf, PandocNotFoundError } = await import("./converter.js");
+        try {
+          const pdfPath = await convertToPdf(tempDocx, finalOutput);
+          console.log(chalk.green(`\n✅ PDF generated: ${pdfPath}`));
+          console.log(chalk.dim(`  Size: ${(docxBuffer.length / 1024).toFixed(1)} KB (DOCX)`));
+        } catch (err) {
+          if (err instanceof PandocNotFoundError) {
+            console.error(chalk.red("\n❌ pandoc not found."));
+            console.error(chalk.dim("  Install it: sudo apt install pandoc (Linux)"));
+            console.error(chalk.dim("  Or: brew install pandoc (macOS)"));
+            // Fall back to DOCX
+            const docxOutput = finalOutput.replace(/\.pdf$/i, ".docx");
+            await writeFile(docxOutput, docxBuffer);
+            console.log(chalk.green(`\n✅ DOCX generated instead: ${docxOutput}`));
+          } else {
+            throw err;
+          }
+        } finally {
+          // Clean up temporary DOCX
+          await rm(tempDocx, { force: true }).catch(() => {});
+        }
       } else {
         console.error(chalk.red(`❌ Unsupported format: ${format}. Use "docx" or "pdf".`));
         process.exit(1);
