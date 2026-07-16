@@ -48,6 +48,13 @@ export interface BookMetadata {
   metadata: Record<string, unknown>;
 }
 
+export interface TemplateSuggestion {
+  styles: Record<string, string>;
+  annotation_styles: Record<string, string>;
+  confidence: "high" | "medium" | "low";
+  rationale: string;
+}
+
 export interface LlmProvider {
   readonly config: LlmProviderConfig;
 
@@ -65,6 +72,15 @@ export interface LlmProvider {
    * Returns title, subtitle, lesson count, and metadata (audience, prerequisites, etc.).
    */
   extractBookMetadata(readmeMd: string, lessonCount: number): Promise<BookMetadata>;
+
+  /**
+   * Analyze DOCX template images and suggest style mappings via Vision API.
+   *
+   * @param images - Array of page images (PNG buffers) from the rendered DOCX
+   * @param docxPath - Path to the source DOCX file (for context)
+   * @returns A TemplateSuggestion with style/annotation mappings
+   */
+  analyzeTemplateImages(images: Buffer[], docxPath: string): Promise<TemplateSuggestion>;
 }
 
 // ─── Retry Logic ───────────────────────────────────────────────────────────
@@ -131,6 +147,18 @@ Return a JSON object with:
   - "commitment": the course commitment or value proposition (look for "Compromisso do módulo", "O que você vai aprender", "Ao final deste curso" sections)
 
 Extract only what exists in the README. Do not fabricate information. Leave fields empty/omitted if not found.`;
+
+// ─── Vision Prompt ─────────────────────────────────────────────────────────
+
+const VISION_SYSTEM_PROMPT = `You are a DOCX template analyzer. Given rendered page images of a Word template, identify the named styles used in the document and suggest how they should map to semantic markdown elements.
+
+Return a JSON object with:
+- "styles": a record mapping semantic keys (h1, h2, h3, body, code, blockquote, image_caption, objectives, table_header, table_cell, questions_title, questions_body) to the DOCX style names you observe in the images
+- "annotation_styles": a record mapping annotation keys (quick_check, callout_note, callout_warning, mind_map, mermaid) to the DOCX style names used for those elements
+- "confidence": "high", "medium", or "low" — how confident you are in the mapping
+- "rationale": a brief explanation of your mapping decisions
+
+Look for heading styles, body text styles, code block styles, quote styles, table styles, list styles, and any callout/note/warning styles. Pay attention to font size, boldness, indentation, and other visual cues that distinguish different style types.`;
 
 // ─── OpenAI Provider ───────────────────────────────────────────────────────
 
@@ -220,6 +248,51 @@ export class OpenAiLlmProvider implements LlmProvider {
         total_lessons: _lessonCount,
         metadata: parsed.metadata ?? {},
       };
+    }, this.config.maxRetries);
+  }
+
+  async analyzeTemplateImages(images: Buffer[], docxPath: string): Promise<TemplateSuggestion> {
+    // Limit to first 3 pages to control cost and latency
+    const limitedImages = images.slice(0, 3);
+    if (images.length > 5) {
+      console.warn(
+        `Template has ${images.length} pages; analyzing first 3 only to control cost. ` +
+          "For full analysis, process pages individually.",
+      );
+    }
+
+    return withRetry(async () => {
+      const imageContent: OpenAI.Chat.ChatCompletionContentPart[] = limitedImages.map((buffer) => ({
+        type: "image_url" as const,
+        image_url: {
+          url: `data:image/png;base64,${buffer.toString("base64")}`,
+        },
+      }));
+
+      const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+        { role: "system", content: VISION_SYSTEM_PROMPT },
+        {
+          role: "user" as const,
+          content: [
+            { type: "text" as const, text: `Analyze this DOCX template: ${docxPath}` },
+            ...imageContent,
+          ],
+        },
+      ];
+
+      const response = await this.client.chat.completions.create({
+        model: this.config.model,
+        messages,
+        temperature: this.config.temperature,
+        response_format: { type: "json_object" },
+      });
+
+      const result = response.choices[0]?.message?.content;
+      if (!result) {
+        throw new LlmExtractionError("OpenAI returned empty response for template analysis");
+      }
+
+      return JSON.parse(result) as TemplateSuggestion;
     }, this.config.maxRetries);
   }
 }
@@ -395,6 +468,54 @@ export class AnthropicLlmProvider implements LlmProvider {
         total_lessons: _lessonCount,
         metadata: input.metadata ?? {},
       };
+    }, this.config.maxRetries);
+  }
+
+  async analyzeTemplateImages(images: Buffer[], docxPath: string): Promise<TemplateSuggestion> {
+    // Limit to first 3 pages to control cost and latency
+    const limitedImages = images.slice(0, 3);
+    if (images.length > 5) {
+      console.warn(
+        `Template has ${images.length} pages; analyzing first 3 only to control cost. ` +
+          "For full analysis, process pages individually.",
+      );
+    }
+
+    return withRetry(async () => {
+      const imageContent: Anthropic.ImageBlockParam[] = limitedImages.map((buffer) => ({
+        type: "image",
+        source: {
+          type: "base64",
+          media_type: "image/png",
+          data: buffer.toString("base64"),
+        },
+      }));
+
+      const response = await this.client.messages.create({
+        model: this.config.model,
+        max_tokens: 4096,
+        system: VISION_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `Analyze this DOCX template: ${docxPath}` },
+              ...imageContent,
+            ],
+          },
+        ],
+        temperature: this.config.temperature,
+      });
+
+      const textBlock = response.content.find(
+        (block: Anthropic.ContentBlock) => block.type === "text",
+      ) as Anthropic.TextBlock | undefined;
+
+      if (!textBlock?.text) {
+        throw new LlmExtractionError("Anthropic returned empty response for template analysis");
+      }
+
+      return JSON.parse(textBlock.text) as TemplateSuggestion;
     }, this.config.maxRetries);
   }
 }

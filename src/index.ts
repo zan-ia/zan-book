@@ -16,6 +16,7 @@ export {
   LayoutBlockSchema,
   TemplateMappingSchema,
   MermaidThemeSchema,
+  AnnotationStyleKind,
 } from "./contracts.js";
 
 export type {
@@ -38,10 +39,17 @@ export { CacheManager } from "./cache.js";
 
 // LLM Provider
 export { createLlmProvider, LlmConfigurationError, LlmExtractionError } from "./llm.js";
-export type { LlmProvider, LlmProviderConfig, BookMetadata } from "./llm.js";
+export type { LlmProvider, LlmProviderConfig, BookMetadata, TemplateSuggestion } from "./llm.js";
 
 // Analyzer
-export { analyzeTemplate, analyzeTemplateWithAI } from "./analyzer.js";
+export {
+  analyzeTemplate,
+  analyzeTemplateWithAI,
+  convertDocxToImages,
+  AnalyzerError,
+  DocxParsingError,
+  VisionAnalysisError,
+} from "./analyzer.js";
 
 // Renderer
 export { renderBook, renderMermaidDiagram } from "./renderer.js";
