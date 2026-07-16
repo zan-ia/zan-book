@@ -211,7 +211,8 @@ function createTemplateAddCommand(): Command {
           const config = await loadConfig();
           const llmConfig: LlmProviderConfig = {
             provider: config.llm?.provider ?? "openai",
-            model: config.llm?.model ?? "gpt-4o",
+            model: config.llm?.model ?? process.env.ZANBOOK_MODEL ?? "gpt-4o",
+            baseURL: config.llm?.baseURL ?? process.env.OPENROUTER_BASE_URL,
             temperature: config.llm?.temperature,
             maxRetries: config.llm?.maxRetries,
           };

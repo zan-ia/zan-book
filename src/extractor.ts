@@ -749,8 +749,8 @@ async function getDefaultLlmConfig(): Promise<LlmProviderConfig> {
   const config = await loadConfig();
   return {
     provider: config.llm?.provider ?? "openai",
-    model: config.llm?.model ?? "gpt-4o-mini",
-    baseURL: config.llm?.baseURL,
+    model: config.llm?.model ?? process.env.ZANBOOK_MODEL ?? "gpt-4o-mini",
+    baseURL: config.llm?.baseURL ?? process.env.OPENROUTER_BASE_URL,
     temperature: config.llm?.temperature ?? 0,
     maxRetries: config.llm?.maxRetries ?? 3,
   };
