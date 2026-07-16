@@ -65,6 +65,69 @@ export class CacheManager {
     return currentHash !== cachedHash;
   }
 
+  /**
+   * Get cache statistics: number of entries and total size in bytes.
+   */
+  async getStats(): Promise<{ entries: number; sizeBytes: number }> {
+    let entries = 0;
+    let sizeBytes = 0;
+    try {
+      const { readdir, stat } = await import("node:fs/promises");
+      const files = await readdir(this.cacheDir);
+      for (const file of files) {
+        if (file.endsWith(".json") && !file.endsWith(".tmp.")) {
+          entries++;
+          try {
+            const stats = await stat(join(this.cacheDir, file));
+            sizeBytes += stats.size;
+          } catch {
+            /* skip */
+          }
+        }
+      }
+    } catch {
+      /* cache dir may not exist */
+    }
+    return { entries, sizeBytes };
+  }
+
+  /**
+   * Clear all cached entries from the cache directory.
+   */
+  async clear(): Promise<number> {
+    const { readdir, rm } = await import("node:fs/promises");
+    let removed = 0;
+    try {
+      const files = await readdir(this.cacheDir);
+      for (const file of files) {
+        if (file.endsWith(".json") && !file.startsWith("errors")) {
+          await rm(join(this.cacheDir, file), { force: true });
+          removed++;
+        }
+      }
+    } catch {
+      /* cache dir may not exist */
+    }
+    return removed;
+  }
+
+  /**
+   * Read logged errors from the errors.jsonl file.
+   */
+  static async getErrors(
+    cacheDir: string,
+  ): Promise<{ timestamp: string; lesson: number; error: string }[]> {
+    try {
+      const raw = await readFile(join(cacheDir, "errors.jsonl"), "utf-8");
+      return raw
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => JSON.parse(line) as { timestamp: string; lesson: number; error: string });
+    } catch {
+      return [];
+    }
+  }
+
   // ─── Static helpers ──────────────────────────────────────────────────────
 
   /**
