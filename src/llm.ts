@@ -53,6 +53,30 @@ export interface BookMetadata {
 export interface TemplateSuggestion {
   styles: Record<string, string>;
   annotation_styles: Record<string, string>;
+  /**
+   * Generic visual profile extracted from the page images.
+   * Template-agnostic — describes colors, typography, and layout
+   * without referencing any specific brand or template.
+   */
+  visual_profile?: {
+    colors: Array<{
+      hex: string;
+      role:
+        "primary" | "secondary" | "accent" | "text" | "muted" | "background" | "surface" | "border";
+      weight?: number;
+    }>;
+    typography: {
+      headingFont: string;
+      bodyFont: string;
+      monoFont: string;
+    };
+    layout: {
+      marginMm: number;
+      hasHeaderBar: boolean;
+      hasFooterBar: boolean;
+      hasAccentLine: boolean;
+    };
+  };
   confidence: "high" | "medium" | "low";
   rationale: string;
 }
@@ -152,15 +176,64 @@ Extract only what exists in the README. Do not fabricate information. Leave fiel
 
 // ─── Vision Prompt ─────────────────────────────────────────────────────────
 
-const VISION_SYSTEM_PROMPT = `You are a DOCX template analyzer. Given rendered page images of a Word template, identify the named styles used in the document and suggest how they should map to semantic markdown elements.
+const VISION_SYSTEM_PROMPT = `You are a generic visual identity extractor for documents. Given rendered page images of any document template, extract a generic visual profile that can be applied to any DOCX output.
 
-Return a JSON object with:
-- "styles": a record mapping semantic keys (h1, h2, h3, body, code, blockquote, image_caption, objectives, table_header, table_cell, questions_title, questions_body) to the DOCX style names you observe in the images
-- "annotation_styles": a record mapping annotation keys (quick_check, callout_note, callout_warning, mind_map, mermaid) to the DOCX style names used for those elements
-- "confidence": "high", "medium", or "low" — how confident you are in the mapping
-- "rationale": a brief explanation of your mapping decisions
+This is TEMPLATE-AGNOSTIC — do not hardcode or reference any specific template, brand, or course. Extract generalizable visual properties.
 
-Look for heading styles, body text styles, code block styles, quote styles, table styles, list styles, and any callout/note/warning styles. Pay attention to font size, boldness, indentation, and other visual cues that distinguish different style types.`;
+Return a JSON object with this structure:
+{
+  "colors": [
+    { "hex": "#1F4E79", "role": "primary",   "weight": 0.9 }, // Titles, main headings
+    { "hex": "#2E75B6", "role": "secondary", "weight": 0.7 }, // Subtitles, secondary headings
+    { "hex": "#5B9BD5", "role": "accent",    "weight": 0.5 }, // Callouts, highlights
+    { "hex": "#1F2937", "role": "text",      "weight": 1.0 }, // Body text
+    { "hex": "#6B7280", "role": "muted",     "weight": 0.3 }, // Captions, metadata
+    { "hex": "#FFFFFF", "role": "background","weight": 1.0 }, // Page background
+    { "hex": "#F0F4F8", "role": "surface",   "weight": 0.4 }, // Cards, callout backgrounds
+    { "hex": "#CBD5E1", "role": "border",    "weight": 0.2 }  // Lines, dividers
+  ],
+  "typography": {
+    "headingFont": "Font name for headings (e.g. Calibri, Calibri Light, Arial)",
+    "bodyFont":    "Font name for body text",
+    "monoFont":    "Monospace font (default: Courier New)"
+  },
+  "layout": {
+    "marginMm":      25,
+    "hasHeaderBar":  true_or_false,  // Is there a decorative bar/line at top?
+    "hasFooterBar":  true_or_false,  // Bottom bar/line?
+    "hasAccentLine": true_or_false   // Vertical accent line on side?
+  },
+  "confidence": "high" | "medium" | "low",
+  "rationale": "Brief visual description of what you observed"
+}
+
+Visual role definitions (use these exactly):
+- "primary"     — Titles, main headings, dominant brand color
+- "secondary"   — Subtitles, secondary headings
+- "accent"      — Highlights, callouts, links, active states
+- "text"        — Body text
+- "muted"       — Captions, metadata, small notes
+- "background"  — Page background
+- "surface"     — Card/box backgrounds, callout fills
+- "border"      — Lines, dividers, borders
+
+Color rules:
+- Include 5-8 colors sorted by importance (weight 1.0 = most important)
+- Only include colors you actually see in the images
+- Do NOT invent colors that aren't present
+- If a role is not visually represented, omit it
+- Be specific with the hex codes (use color picker mentally)
+
+Typography rules:
+- Only name fonts you can read/identify
+- If unsure about a font, use the closest safe default (Calibri, Arial)
+- Use a monospace font that's common in design tools (Courier New, Consolas)
+
+Layout rules:
+- Default marginMm: 20-30 (typical for documents)
+- hasHeaderBar: true if you see a colored line/bar at the top of pages
+- hasFooterBar: true if you see a colored line/bar at the bottom
+- hasAccentLine: true if you see a vertical accent on the side`;
 
 // ─── OpenAI Provider ───────────────────────────────────────────────────────
 

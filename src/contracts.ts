@@ -113,6 +113,53 @@ export const ThemeSchema = z.object({
 
 export type Theme = z.infer<typeof ThemeSchema>;
 
+// ─── Visual Profile (template-agnostic) ───────────────────────────────────
+
+/**
+ * A visual role that a color can play in the document.
+ * Generic — works for any template.
+ */
+export const ColorRoleSchema = z.enum([
+  "primary",
+  "secondary",
+  "accent",
+  "text",
+  "muted",
+  "background",
+  "surface",
+  "border",
+]);
+export type ColorRole = z.infer<typeof ColorRoleSchema>;
+
+export const PaletteEntrySchema = z.object({
+  hex: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  role: ColorRoleSchema,
+  weight: z.number().min(0).max(1).optional(),
+});
+export type PaletteEntry = z.infer<typeof PaletteEntrySchema>;
+
+export const VisualProfileSchema = z.object({
+  colors: z.array(PaletteEntrySchema).default([]),
+  typography: z
+    .object({
+      headingFont: z.string().default("Calibri"),
+      bodyFont: z.string().default("Calibri"),
+      monoFont: z.string().default("Courier New"),
+    })
+    .default({}),
+  layout: z
+    .object({
+      marginMm: z.number().default(25),
+      hasHeaderBar: z.boolean().default(false),
+      hasFooterBar: z.boolean().default(false),
+      hasAccentLine: z.boolean().default(false),
+    })
+    .default({}),
+  source: z.enum(["auto", "ai", "manual"]).default("auto"),
+  confidence: z.enum(["high", "medium", "low"]).default("medium"),
+});
+export type VisualProfile = z.infer<typeof VisualProfileSchema>;
+
 // ─── Template Mapping ──────────────────────────────────────────────────────
 export const TemplateMappingSchema = z.object({
   id: z.string(),
@@ -144,6 +191,12 @@ export const TemplateMappingSchema = z.object({
   margins: z.record(z.number()).default({}),
   /** Visual theme extracted from PPTX template (fonts, colors) */
   theme: ThemeSchema.optional(),
+  /**
+   * Generic visual profile — template-agnostic description of
+   * a template's visual identity (colors, typography, layout).
+   * Extracted from any template via LLM Vision (--ai mode).
+   */
+  visual_profile: VisualProfileSchema.optional(),
 });
 
 export type TemplateMapping = z.infer<typeof TemplateMappingSchema>;

@@ -120,6 +120,9 @@ interface RunModifiers {
   bold?: boolean;
   italics?: boolean;
   strike?: boolean;
+  font?: string;
+  color?: string;
+  size?: number;
 }
 
 /**
@@ -234,6 +237,81 @@ function annotationStyle(annotation: Annotation, mapping: TemplateMapping): stri
 // mdast → DOCX Conversion
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Generic Theme — applied template-agnostically to all DOCX output
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Resolved theme spec built from either a VisualProfile (preferred)
+ * or a PPTX Theme (fallback). This is template-agnostic — it just
+ * maps generic role names to concrete font/color values.
+ */
+interface GenericTheme {
+  headingFont: string;
+  bodyFont: string;
+  monoFont: string;
+  /** Color by role — renderer looks up by semantic role. */
+  colors: Partial<Record<string, string>>;
+}
+
+function buildGenericTheme(mapping: TemplateMapping): GenericTheme {
+  // Default fallback
+  const defaultTheme: GenericTheme = {
+    headingFont: "Calibri Light",
+    bodyFont: "Calibri",
+    monoFont: "Courier New",
+    colors: {
+      primary: "1F4E79",
+      accent: "5B9BD5",
+      text: "1F2937",
+      muted: "6B7280",
+      background: "FFFFFF",
+    },
+  };
+
+  // Try VisualProfile first (template-agnostic)
+  const vp = mapping.visual_profile;
+  if (vp) {
+    const colors: Partial<Record<string, string>> = {};
+    for (const entry of vp.colors ?? []) {
+      colors[entry.role] = entry.hex;
+    }
+    return {
+      headingFont: vp.typography?.headingFont ?? defaultTheme.headingFont,
+      bodyFont: vp.typography?.bodyFont ?? defaultTheme.bodyFont,
+      monoFont: vp.typography?.monoFont ?? defaultTheme.monoFont,
+      colors: { ...defaultTheme.colors, ...colors },
+    };
+  }
+
+  // Fallback: PPTX Theme
+  const t = mapping.theme;
+  if (t) {
+    const c = t.colors ?? {};
+    return {
+      headingFont: t.majorFont ?? defaultTheme.headingFont,
+      bodyFont: t.minorFont ?? defaultTheme.bodyFont,
+      monoFont: defaultTheme.monoFont,
+      colors: {
+        primary: c.accent1 ?? defaultTheme.colors.primary,
+        secondary: c.accent2 ?? "2E75B6",
+        accent: c.accent3 ?? defaultTheme.colors.accent,
+        text: c.dk1 ?? defaultTheme.colors.text,
+        muted: c.dk2 ?? defaultTheme.colors.muted,
+        background: c.lt1 ?? defaultTheme.colors.background,
+        surface: c.lt2 ?? "F0F4F8",
+        border: c.hlink ?? "CBD5E1",
+      },
+    };
+  }
+
+  return defaultTheme;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// mdast → DOCX Conversion
+// ═══════════════════════════════════════════════════════════════════════════
+
 interface ConversionContext {
   mapping: TemplateMapping;
   annotations: Annotation[];
@@ -241,6 +319,8 @@ interface ConversionContext {
   mmdcAvailable: boolean;
   /** Map of image path → resolved absolute path */
   imagePaths: Map<string, string>;
+  /** Generic theme derived from visual_profile or theme */
+  theme: GenericTheme;
 }
 
 /**
@@ -334,13 +414,13 @@ async function convertBlockNode(
 ): Promise<Paragraph | Table | null> {
   switch (node.type) {
     case "heading":
-      return createHeadingParagraph(node, ctx.mapping, annotationStyleName);
+      return createHeadingParagraph(node, ctx, annotationStyleName);
 
     case "paragraph":
       return createBodyParagraph(node, ctx, annotationStyleName);
 
     case "code":
-      return createCodeParagraph(node, ctx.mapping, annotationStyleName);
+      return createCodeParagraph(node, ctx, annotationStyleName);
 
     case "blockquote":
       return createBlockquoteParagraph(node, ctx, annotationStyleName);
@@ -370,16 +450,27 @@ async function convertBlockNode(
 
 function createHeadingParagraph(
   node: Content,
-  mapping: TemplateMapping,
+  ctx: ConversionContext,
   styleName?: string,
 ): Paragraph {
   const hNode = node as { depth: number; children: PhrasingContent[] };
   const styleKey = `h${Math.min(hNode.depth, 3)}` as "h1" | "h2" | "h3";
-  const style = styleName ?? mapping.styles?.[styleKey] ?? `Heading ${hNode.depth}`;
+  const style = styleName ?? ctx.mapping.styles?.[styleKey] ?? `Heading ${hNode.depth}`;
+
+  // Apply theme: heading font + primary/secondary color
+  const headingColor =
+    hNode.depth === 1
+      ? ctx.theme.colors.primary
+      : hNode.depth === 2
+        ? ctx.theme.colors.primary
+        : (ctx.theme.colors.secondary ?? ctx.theme.colors.primary);
 
   return new Paragraph({
     style,
-    children: buildInlineChildren(hNode.children),
+    children: buildInlineChildren(hNode.children, {
+      font: ctx.theme.headingFont,
+      color: headingColor,
+    }),
   });
 }
 
@@ -391,19 +482,18 @@ function createBodyParagraph(node: Content, ctx: ConversionContext, styleName?: 
 
   return new Paragraph({
     style,
-    children: buildInlineChildren(pNode.children),
+    children: buildInlineChildren(pNode.children, {
+      font: ctx.theme.bodyFont,
+      color: ctx.theme.colors.text,
+    }),
   });
 }
 
 // ─── Code Block ────────────────────────────────────────────────────────────
 
-function createCodeParagraph(
-  node: Content,
-  mapping: TemplateMapping,
-  styleName?: string,
-): Paragraph {
+function createCodeParagraph(node: Content, ctx: ConversionContext, styleName?: string): Paragraph {
   const cNode = node as { value: string };
-  const style = styleName ?? mapping.styles?.code ?? "CodeBlock";
+  const style = styleName ?? ctx.mapping.styles?.code ?? "CodeBlock";
 
   return new Paragraph({
     style,
@@ -411,8 +501,9 @@ function createCodeParagraph(
     children: [
       new TextRun({
         text: cNode.value,
-        font: "Courier New",
+        font: ctx.theme.monoFont,
         size: 20,
+        color: ctx.theme.colors.text,
       }),
     ],
   });
@@ -847,6 +938,7 @@ export async function renderBook(book: Book, mapping: TemplateMapping): Promise<
     mermaidTheme,
     mmdcAvailable,
     imagePaths,
+    theme: buildGenericTheme(mapping),
   };
 
   // Process layout blocks

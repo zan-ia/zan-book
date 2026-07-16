@@ -18,6 +18,9 @@ export {
   MermaidThemeSchema,
   AnnotationStyleKind,
   ThemeSchema,
+  VisualProfileSchema,
+  ColorRoleSchema,
+  PaletteEntrySchema,
 } from "./contracts.js";
 
 export type {
@@ -30,6 +33,9 @@ export type {
   TemplateMapping,
   MermaidTheme,
   Theme,
+  VisualProfile,
+  ColorRole,
+  PaletteEntry,
 } from "./contracts.js";
 
 // Extractor
