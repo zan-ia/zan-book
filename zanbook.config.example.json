@@ -1,0 +1,27 @@
+{
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "temperature": 0,
+    "maxRetries": 3
+  },
+  "paths": {
+    "booksDir": "books",
+    "templatesDir": "templates",
+    "cacheDir": "cache",
+    "outputDir": "output"
+  },
+  "tools": {
+    "mermaidCli": "mmdc",
+    "pandoc": "pandoc"
+  },
+  "template": {
+    "pageSize": "A4",
+    "defaultMargins": {
+      "top": 25,
+      "bottom": 25,
+      "left": 30,
+      "right": 20
+    }
+  }
+}
