@@ -119,11 +119,23 @@ program
       console.log(chalk.dim(`   ${result.book.lessons.length} aulas`));
       console.log("");
 
-      // Print per-lesson results
+      // Print per-lesson results with cache stats
+      let hits = 0;
+      let misses = 0;
       for (const lr of result.lessonResults) {
         const icon = lr.cached ? chalk.blue("⚡") : chalk.green("✓");
         const cached = lr.cached ? chalk.dim(" (cached)") : "";
         console.log(`   ${icon} Aula ${lr.lesson.number}: ${lr.lesson.title}${cached}`);
+        if (lr.cached) hits++;
+        else misses++;
+      }
+
+      // Print cache summary
+      if (options.cache && (hits > 0 || misses > 0)) {
+        const total = hits + misses;
+        const hitPct = ((hits / total) * 100).toFixed(0);
+        console.log("");
+        console.log(chalk.dim(`   ⚡ Cache: ${hits}/${total} lessons (${hitPct}% hit rate)`));
       }
 
       // Print errors if any
@@ -445,6 +457,97 @@ program
       process.exit(1);
     }
   });
+
+// ─── cache ────────────────────────────────────────────────────────────────
+
+program
+  .command("cache")
+  .description("Manage extraction cache")
+  .addCommand(createCacheStatsCommand())
+  .addCommand(createCacheClearCommand())
+  .addCommand(createCacheErrorsCommand());
+
+function createCacheStatsCommand(): Command {
+  const cmd = new Command("stats").description("Show cache statistics").action(async () => {
+    const config = await loadConfig();
+    const cacheDir = config.paths?.cacheDir ?? join(projectRoot, "cache");
+    const { CacheManager } = await import("./cache.js");
+    const cache = new CacheManager(cacheDir);
+
+    const stats = await cache.getStats();
+    console.log(chalk.blue("\n📊 Cache Statistics"));
+    console.log("");
+    console.log(chalk.dim(`  Directory: ${cacheDir}`));
+    console.log(chalk.dim(`  Entries:   ${chalk.bold(String(stats.entries))}`));
+    console.log(chalk.dim(`  Size:      ${chalk.bold(formatBytes(stats.sizeBytes))}`));
+    console.log("");
+    if (stats.entries === 0) {
+      console.log(
+        chalk.yellow("  ⚠️  Cache is empty. Run `zanbook extract --cache` to populate it."),
+      );
+    }
+  });
+  return cmd;
+}
+
+function createCacheClearCommand(): Command {
+  const cmd = new Command("clear")
+    .description("Clear all cached entries")
+    .option("-f, --force", "Skip confirmation")
+    .action(async (options) => {
+      const config = await loadConfig();
+      const cacheDir = config.paths?.cacheDir ?? join(projectRoot, "cache");
+      const { CacheManager } = await import("./cache.js");
+      const cache = new CacheManager(cacheDir);
+
+      const stats = await cache.getStats();
+      if (stats.entries === 0) {
+        console.log(chalk.yellow("\n⚠️  Cache is already empty."));
+        return;
+      }
+
+      if (!options.force) {
+        console.log(
+          chalk.yellow(
+            `\n⚠️  ${stats.entries} entries (${formatBytes(stats.sizeBytes)}) will be deleted.`,
+          ),
+        );
+        console.log(chalk.dim("  Use --force to confirm."));
+        return;
+      }
+
+      const removed = await cache.clear();
+      console.log(chalk.green(`\n✅ Cache cleared: ${removed} entries removed.`));
+    });
+  return cmd;
+}
+
+function createCacheErrorsCommand(): Command {
+  const cmd = new Command("errors")
+    .description("Show logged extraction errors")
+    .action(async () => {
+      const config = await loadConfig();
+      const cacheDir = config.paths?.cacheDir ?? join(projectRoot, "cache");
+      const { CacheManager } = await import("./cache.js");
+
+      const errors = await CacheManager.getErrors(cacheDir);
+      if (errors.length === 0) {
+        console.log(chalk.green("\n✅ No extraction errors logged."));
+        return;
+      }
+
+      console.log(chalk.yellow(`\n⚠️  ${errors.length} extraction error(s) logged:`));
+      console.log("");
+      for (const err of errors) {
+        const date = new Date(err.timestamp).toLocaleString();
+        console.log(`  ${chalk.red("✗")} Aula ${err.lesson} ${chalk.dim(`(${date})`)}`);
+        console.log(chalk.dim(`    ${err.error}`));
+        console.log("");
+      }
+      console.log(chalk.dim("  Run `zanbook cache clear` to clear errors after reviewing."));
+    });
+  return cmd;
+}
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
