@@ -19,6 +19,8 @@ import chalk from "chalk";
 
 import { analyzeTemplate, analyzeTemplateWithAI } from "./analyzer.js";
 import { createLlmProvider, type LlmProviderConfig } from "./llm.js";
+import { renderBook, RendererError } from "./renderer.js";
+import type { Book, TemplateMapping } from "./contracts.js";
 
 const program = new Command();
 
@@ -194,11 +196,89 @@ program
   .option("-f, --format <format>", "Output format (docx|pdf)", "docx")
   .option("-o, --output <path>", "Output file path")
   .action(async (options) => {
-    console.log(chalk.blue("⚙️  generate — Not yet implemented"));
-    console.log(chalk.dim("  data:"), options.data ?? "(not set)");
-    console.log(chalk.dim("  template:"), options.template ?? "(not set)");
-    console.log(chalk.dim("  format:"), options.format);
-    console.log(chalk.dim("  output:"), options.output ?? "(not set)");
+    const dataPath = options.data;
+    const templateName = options.template;
+    const format = options.format ?? "docx";
+    const outputPath = options.output;
+
+    if (!dataPath) {
+      console.error(
+        chalk.red("❌ --data (-d) is required. Specify the path to extracted book JSON."),
+      );
+      process.exit(1);
+    }
+
+    if (!templateName) {
+      console.error(chalk.red("❌ --template (-t) is required. Specify the template name."));
+      process.exit(1);
+    }
+
+    console.log(chalk.blue("⚙️  Generating document..."));
+    console.log(chalk.dim(`  data:     ${dataPath}`));
+    console.log(chalk.dim(`  template: ${templateName}`));
+    console.log(chalk.dim(`  format:   ${format}`));
+
+    try {
+      // 1. Read book JSON
+      const bookRaw = await readFile(dataPath, "utf-8");
+      const book = JSON.parse(bookRaw) as Book;
+
+      // 2. Find template mapping
+      const config = await loadConfig();
+      const templatesDir = getTemplatesDir(config);
+      const mappingPath = join(templatesDir, `${templateName}.mapping.json`);
+
+      if (!existsSync(mappingPath)) {
+        console.error(chalk.red(`❌ Template mapping not found: ${mappingPath}`));
+        console.error(chalk.dim("  Run `zanbook template add` first to register a template."));
+        process.exit(1);
+      }
+
+      const mappingRaw = await readFile(mappingPath, "utf-8");
+      const mapping = JSON.parse(mappingRaw) as TemplateMapping;
+
+      // 3. Render book to DOCX
+      console.log(chalk.yellow("  Rendering book to DOCX..."));
+      const docxBuffer = await renderBook(book, mapping);
+
+      // 4. Determine output path
+      const outputDir = config.paths?.outputDir ?? join(projectRoot, "output");
+      await mkdir(outputDir, { recursive: true });
+
+      const finalOutput = outputPath ?? join(outputDir, `${book.id}.${format}`);
+
+      // 5. Write output
+      if (format === "docx") {
+        await writeFile(finalOutput, docxBuffer);
+        console.log(chalk.green(`\n✅ DOCX generated: ${finalOutput}`));
+        console.log(chalk.dim(`  Size: ${(docxBuffer.length / 1024).toFixed(1)} KB`));
+      } else if (format === "pdf") {
+        console.error(chalk.yellow("\n⚠️ PDF conversion is not yet implemented (see Issue #6)."));
+        // Fall back to DOCX output
+        const docxOutput = finalOutput.replace(/\.pdf$/i, ".docx");
+        await writeFile(docxOutput, docxBuffer);
+        console.log(chalk.green(`\n✅ DOCX generated instead: ${docxOutput}`));
+        console.log(chalk.dim(`  Size: ${(docxBuffer.length / 1024).toFixed(1)} KB`));
+      } else {
+        console.error(chalk.red(`❌ Unsupported format: ${format}. Use "docx" or "pdf".`));
+        process.exit(1);
+      }
+    } catch (error) {
+      if (error instanceof RendererError) {
+        console.error(chalk.red(`\n❌ Renderer error:`), error.message);
+      } else if (error instanceof SyntaxError) {
+        console.error(
+          chalk.red(`\n❌ Invalid JSON in book data or template mapping:`),
+          error.message,
+        );
+      } else {
+        console.error(
+          chalk.red(`\n❌ Error generating document:`),
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+      process.exit(1);
+    }
   });
 
 // ─── Main ──────────────────────────────────────────────────────────────────
