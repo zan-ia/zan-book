@@ -88,7 +88,32 @@ export const LayoutBlockSchema = z.object({
 });
 
 export type LayoutBlock = z.infer<typeof LayoutBlockSchema>;
+// ─── Visual Theme (from PPTX templates) ───────────────────────────────────
 
+export const ThemeSchema = z.object({
+  majorFont: z.string().default("Calibri Light"),
+  minorFont: z.string().default("Calibri"),
+  colors: z
+    .object({
+      dk1: z.string().optional(),
+      lt1: z.string().optional(),
+      dk2: z.string().optional(),
+      lt2: z.string().optional(),
+      accent1: z.string().optional(),
+      accent2: z.string().optional(),
+      accent3: z.string().optional(),
+      accent4: z.string().optional(),
+      accent5: z.string().optional(),
+      accent6: z.string().optional(),
+      hlink: z.string().optional(),
+      folHlink: z.string().optional(),
+    })
+    .default({}),
+});
+
+export type Theme = z.infer<typeof ThemeSchema>;
+
+// ─── Template Mapping ──────────────────────────────────────────────────────
 export const TemplateMappingSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -117,6 +142,8 @@ export const TemplateMappingSchema = z.object({
   }),
   page_size: z.string().default("A4"),
   margins: z.record(z.number()).default({}),
+  /** Visual theme extracted from PPTX template (fonts, colors) */
+  theme: ThemeSchema.optional(),
 });
 
 export type TemplateMapping = z.infer<typeof TemplateMappingSchema>;

@@ -22,7 +22,7 @@ import { XMLParser } from "fast-xml-parser";
 import { execa } from "execa";
 
 import type { LlmProvider } from "./llm.js";
-import type { TemplateMapping } from "./contracts.js";
+import type { TemplateMapping, Theme } from "./contracts.js";
 
 // ─── Custom Errors ─────────────────────────────────────────────────────────
 
@@ -557,11 +557,13 @@ async function analyzePptxTemplate(pptxPath: string): Promise<TemplateMapping> {
 
   const templateId = basename(pptxPath, extname(pptxPath));
 
+  const theme: Theme = { majorFont, minorFont, colors };
+
   console.log(`  Font: heading="${majorFont}", body="${minorFont}"`);
   if (Object.keys(colors).length > 0) {
     const c = colors;
     console.log(
-      `  Colors: ${c.accent1 ?? ""} ${c.accent2 ?? ""} ${c.accent3 ?? ""}`,
+      `  Colors: accent1=${c.accent1 ?? ""} accent2=${c.accent2 ?? ""} accent3=${c.accent3 ?? ""}`,
     );
   }
 
@@ -570,18 +572,11 @@ async function analyzePptxTemplate(pptxPath: string): Promise<TemplateMapping> {
     name: templateId,
     docx_path: pptxPath,
     layout: defaultLayout(),
-    styles: {
-      ...DEFAULT_STYLE_MAP,
-      // Override with PPTX theme fonts
-      _theme: JSON.stringify({
-        majorFont,
-        minorFont,
-        colors,
-      }),
-    },
+    styles: { ...DEFAULT_STYLE_MAP },
     annotation_styles: { ...DEFAULT_ANNOTATION_MAP },
     page_size: "A4",
     margins: {},
+    theme,
   };
 }
 

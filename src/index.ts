@@ -17,6 +17,7 @@ export {
   TemplateMappingSchema,
   MermaidThemeSchema,
   AnnotationStyleKind,
+  ThemeSchema,
 } from "./contracts.js";
 
 export type {
@@ -28,6 +29,7 @@ export type {
   LayoutBlock,
   TemplateMapping,
   MermaidTheme,
+  Theme,
 } from "./contracts.js";
 
 // Extractor
