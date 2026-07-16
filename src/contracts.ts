@@ -115,6 +115,18 @@ export const TemplateMappingSchema = z.object({
 
 export type TemplateMapping = z.infer<typeof TemplateMappingSchema>;
 
+// ─── Annotation Style Kind (for template analyzer) ────────────────────────
+
+export const AnnotationStyleKind = z.enum([
+  "quick_check",
+  "callout_note",
+  "callout_warning",
+  "mind_map",
+  "mermaid",
+]);
+
+export type AnnotationStyleKind = z.infer<typeof AnnotationStyleKind>;
+
 // ─── Mermaid Theme ─────────────────────────────────────────────────────────
 
 export const MermaidThemeSchema = z.object({
