@@ -675,35 +675,66 @@ function createThematicBreakParagraph(): Paragraph {
  * Create the cover page section.
  */
 function createCoverSection(book: Book, mapping: TemplateMapping): ISectionOptions {
+  const theme = buildGenericTheme(mapping);
+  const primaryColor = theme.colors.primary ?? "1F4E79";
+  const mutedColor = theme.colors.muted ?? "6B7280";
+
   const children: Paragraph[] = [];
 
-  // Spacer paragraphs to push title to vertical center
-  children.push(new Paragraph({ spacing: { before: 4000 }, children: [] }));
-
-  // Title
-  children.push(
-    new Paragraph({
-      style: mapping.styles?.h1 ?? "Heading 1",
-      alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: book.title, bold: true, size: 56 })],
-    }),
-  );
-
-  // Subtitle
-  if (book.subtitle) {
+  // Header bar — colored line at top using primary color
+  if (mapping.visual_profile?.layout?.hasHeaderBar ?? true) {
     children.push(
       new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 200 },
-        children: [new TextRun({ text: book.subtitle, size: 32, color: "555555" })],
+        spacing: { before: 0, after: 200 },
+        border: {
+          bottom: { color: primaryColor, space: 8, size: 6, style: BorderStyle.SINGLE },
+        },
+        children: [],
       }),
     );
   }
 
-  // Spacing
+  // Spacer to push title to vertical center
+  children.push(new Paragraph({ spacing: { before: 3600 }, children: [] }));
+
+  // Title — centered, primary color, heading font
+  children.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: book.title,
+          bold: true,
+          size: 56,
+          font: theme.headingFont,
+          color: primaryColor,
+        }),
+      ],
+    }),
+  );
+
+  // Subtitle — centered, muted color
+  if (book.subtitle) {
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 300 },
+        children: [
+          new TextRun({
+            text: book.subtitle,
+            size: 32,
+            font: theme.bodyFont,
+            color: mutedColor,
+          }),
+        ],
+      }),
+    );
+  }
+
+  // Spacing before metadata
   children.push(new Paragraph({ spacing: { before: 600 }, children: [] }));
 
-  // Metadata
+  // Metadata lines — centered, small, muted
   const metadataLines: string[] = [];
   if (book.metadata?.author) metadataLines.push(String(book.metadata.author));
   if (book.metadata?.date) metadataLines.push(String(book.metadata.date));
@@ -714,7 +745,27 @@ function createCoverSection(book: Book, mapping: TemplateMapping): ISectionOptio
       new Paragraph({
         alignment: AlignmentType.CENTER,
         spacing: { before: 100 },
-        children: [new TextRun({ text: line, size: 24, color: "777777" })],
+        children: [
+          new TextRun({
+            text: line,
+            size: 24,
+            font: theme.bodyFont,
+            color: mutedColor,
+          }),
+        ],
+      }),
+    );
+  }
+
+  // Bottom accent line (optional, if layout has accent line)
+  if (mapping.visual_profile?.layout?.hasAccentLine) {
+    children.push(
+      new Paragraph({
+        spacing: { before: 400 },
+        border: {
+          top: { color: primaryColor, space: 8, size: 3, style: BorderStyle.SINGLE },
+        },
+        children: [],
       }),
     );
   }
