@@ -863,25 +863,49 @@ export async function renderBook(book: Book, mapping: TemplateMapping): Promise<
       }
 
       case "chapter": {
-        const lesson = book.lessons.find((l) => l.slug === block.source);
-        if (lesson) {
-          const chapterCtx: ConversionContext = {
-            ...ctx,
-            annotations: lesson.annotations,
-          };
-          sections.push(await createChapterSection(lesson, mapping, chapterCtx));
+        // If source is a specific slug, render that lesson.
+        // Otherwise (source === "lesson"), render ALL lessons.
+        if (block.source === "lesson") {
+          for (const lesson of book.lessons) {
+            const chapterCtx: ConversionContext = {
+              ...ctx,
+              annotations: lesson.annotations,
+            };
+            sections.push(await createChapterSection(lesson, mapping, chapterCtx));
+          }
+        } else {
+          const lesson = book.lessons.find((l) => l.slug === block.source);
+          if (lesson) {
+            const chapterCtx: ConversionContext = {
+              ...ctx,
+              annotations: lesson.annotations,
+            };
+            sections.push(await createChapterSection(lesson, mapping, chapterCtx));
+          }
         }
         break;
       }
 
       case "questions": {
-        const lesson = book.lessons.find((l) => l.slug === block.source);
-        if (lesson && lesson.questions_md) {
-          const questionsCtx: ConversionContext = {
-            ...ctx,
-            annotations: lesson.annotations,
-          };
-          sections.push(await createQuestionsSection(lesson, mapping, questionsCtx));
+        if (block.source === "questions") {
+          for (const lesson of book.lessons) {
+            if (lesson.questions_md) {
+              const questionsCtx: ConversionContext = {
+                ...ctx,
+                annotations: lesson.annotations,
+              };
+              sections.push(await createQuestionsSection(lesson, mapping, questionsCtx));
+            }
+          }
+        } else {
+          const lesson = book.lessons.find((l) => l.slug === block.source);
+          if (lesson && lesson.questions_md) {
+            const questionsCtx: ConversionContext = {
+              ...ctx,
+              annotations: lesson.annotations,
+            };
+            sections.push(await createQuestionsSection(lesson, mapping, questionsCtx));
+          }
         }
         break;
       }

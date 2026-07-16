@@ -1,0 +1,55 @@
+{
+  "id": "Padrão A4",
+  "name": "Padrão A4",
+  "docx_path": "templates/sample-template.docx",
+  "layout": [
+    {
+      "kind": "cover",
+      "source": "cover",
+      "page_break": true
+    },
+    {
+      "kind": "toc",
+      "source": "toc",
+      "page_break": true
+    },
+    {
+      "kind": "chapter",
+      "source": "lesson",
+      "page_break": true
+    },
+    {
+      "kind": "questions",
+      "source": "questions",
+      "page_break": true
+    },
+    {
+      "kind": "appendix",
+      "source": "appendix",
+      "page_break": false
+    }
+  ],
+  "styles": {
+    "h1": "Heading 1",
+    "h2": "Heading 2",
+    "h3": "Heading 3",
+    "body": "Body Text",
+    "code": "CodeBlock",
+    "blockquote": "Quote",
+    "table_header": "Table Header",
+    "table_cell": "Table Cell",
+    "image_caption": "Caption",
+    "objectives": "List Bullet",
+    "questions_title": "Heading 2",
+    "questions_body": "Body Text"
+  },
+  "annotation_styles": {
+    "quick_check": "Callout",
+    "callout_note": "Note",
+    "callout_warning": "Warning",
+    "mind_map": "Image Center",
+    "mermaid": "Image Center"
+  },
+  "page_size": "A4",
+  "margins": {}
+}
