@@ -9,6 +9,8 @@
  * - `zanbook generate`  — Generate DOCX/PDF from extracted data
  */
 
+import "dotenv/config";
+
 import { readFile, writeFile, mkdir, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";

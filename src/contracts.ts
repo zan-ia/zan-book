@@ -2,7 +2,13 @@ import { z } from "zod";
 
 // ─── Frontmatter ───────────────────────────────────────────────────────────
 
-export const LevelEnum = z.enum(["iniciante", "intermediario", "avancado"]);
+export const LevelEnum = z.enum([
+  "iniciante",
+  "intermediario",
+  "intermediário",
+  "avancado",
+  "avançado",
+]);
 
 export type Level = z.infer<typeof LevelEnum>;
 

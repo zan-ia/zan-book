@@ -191,6 +191,79 @@ export class OpenAiLlmProvider implements LlmProvider {
     });
   }
 
+  /**
+   * Extract text content from an OpenAI completion response,
+   * handling reasoning models (DeepSeek R1/V4 Flash, etc.) that
+   * may return content in the `reasoning` field or wrap it in
+   * markdown code blocks.
+   */
+  private extractContent(response: OpenAI.Chat.Completions.ChatCompletion): string {
+    const message = response.choices[0]?.message;
+    if (!message) {
+      throw new LlmExtractionError("OpenAI returned empty response");
+    }
+
+    // Standard content field
+    if (message.content) return message.content;
+
+    // Reasoning models (DeepSeek V4 Flash, R1, etc.) put content here
+    const reasoning = (message as unknown as Record<string, unknown>).reasoning;
+    if (typeof reasoning === "string" && reasoning.length > 0) {
+      return reasoning;
+    }
+
+    throw new LlmExtractionError("OpenAI returned response with no content or reasoning field");
+  }
+
+  /**
+   * Parse JSON from LLM response, stripping markdown code block
+   * wrappers that some models (especially reasoning models) add.
+   */
+  private parseLlmJson<T>(raw: string): T {
+    // Strip markdown JSON code blocks: ```json ... ```
+    let cleaned = raw.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "");
+
+    // Find the first JSON object or array in the cleaned string
+    const firstBrace = cleaned.indexOf("{");
+    const firstBracket = cleaned.indexOf("[");
+    const jsonStart =
+      firstBrace >= 0 && (firstBracket < 0 || firstBrace < firstBracket)
+        ? firstBrace
+        : firstBracket;
+
+    if (jsonStart < 0) {
+      throw new LlmExtractionError(
+        `No JSON object/array found in response: ${cleaned.slice(0, 100)}...`,
+      );
+    }
+
+    cleaned = cleaned.slice(jsonStart);
+
+    // Find the matching closing brace/bracket
+    let depth = 0;
+    let jsonEnd = -1;
+    const firstChar = cleaned[0] as "{" | "[";
+    const closeChar = firstChar === "{" ? "}" : "]";
+
+    for (let i = 0; i < cleaned.length; i++) {
+      const ch = cleaned[i]!;
+      if (ch === firstChar) depth++;
+      else if (ch === closeChar) {
+        depth--;
+        if (depth === 0) {
+          jsonEnd = i + 1;
+          break;
+        }
+      }
+    }
+
+    if (jsonEnd < 0) {
+      throw new LlmExtractionError(`Unterminated JSON in response: ${cleaned.slice(0, 100)}...`);
+    }
+
+    return JSON.parse(cleaned.slice(0, jsonEnd)) as T;
+  }
+
   async extractAnnotations(contentMd: string, previousError?: string): Promise<Annotation[]> {
     return withRetry(async () => {
       const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
@@ -213,15 +286,10 @@ export class OpenAiLlmProvider implements LlmProvider {
         model: this.config.model,
         messages,
         temperature: this.config.temperature,
-        response_format: { type: "json_object" },
       });
 
-      const result = response.choices[0]?.message?.content;
-      if (!result) {
-        throw new LlmExtractionError("OpenAI returned empty response");
-      }
-
-      const parsed = JSON.parse(result) as { annotations?: Annotation[] };
+      const result = this.extractContent(response);
+      const parsed = this.parseLlmJson<{ annotations?: Annotation[] }>(result);
       return Array.isArray(parsed.annotations) ? parsed.annotations : [];
     }, this.config.maxRetries);
   }
@@ -235,19 +303,14 @@ export class OpenAiLlmProvider implements LlmProvider {
           { role: "user", content: `Extract metadata from this README:\n\n${readmeMd}` },
         ],
         temperature: this.config.temperature,
-        response_format: { type: "json_object" },
       });
 
-      const result = response.choices[0]?.message?.content;
-      if (!result) {
-        throw new LlmExtractionError("OpenAI returned empty response");
-      }
-
-      const parsed = JSON.parse(result) as {
+      const result = this.extractContent(response);
+      const parsed = this.parseLlmJson<{
         title?: string;
         subtitle?: string;
         metadata?: Record<string, unknown>;
-      };
+      }>(result);
 
       return {
         title: parsed.title ?? "Untitled Course",
@@ -291,15 +354,10 @@ export class OpenAiLlmProvider implements LlmProvider {
         model: this.config.model,
         messages,
         temperature: this.config.temperature,
-        response_format: { type: "json_object" },
       });
 
-      const result = response.choices[0]?.message?.content;
-      if (!result) {
-        throw new LlmExtractionError("OpenAI returned empty response for template analysis");
-      }
-
-      return JSON.parse(result) as TemplateSuggestion;
+      const result = this.extractContent(response);
+      return this.parseLlmJson<TemplateSuggestion>(result);
     }, this.config.maxRetries);
   }
 }
