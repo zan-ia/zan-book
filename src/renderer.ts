@@ -1073,20 +1073,60 @@ export async function renderBook(book: Book, mapping: TemplateMapping): Promise<
     right: mapping.margins?.right ?? 1440,
   };
 
-  const configuredSections = sections.map((section) => ({
-    ...section,
-    properties: {
-      ...section.properties,
-      page: {
-        size: pageSize,
-        margin: margins,
+  // Build header/footer paragraphs using theme
+  const theme = buildGenericTheme(mapping);
+  const hdr = createHeaderParagraph(book, theme);
+  const ftr = createFooterParagraph(theme);
+
+  const configuredSections = sections.map((section) => {
+    // Prepend header and append footer
+    const children = section.children ? [...section.children] : [];
+    if (hdr) children.unshift(hdr);
+    if (ftr) children.push(ftr);
+
+    return {
+      ...section,
+      children,
+      properties: {
+        ...section.properties,
+        page: {
+          size: pageSize,
+          margin: margins,
+        },
       },
-    },
-  }));
+    };
+  });
 
   const doc = new Document({
     sections: configuredSections as unknown as readonly ISectionOptions[],
   });
 
   return await Packer.toBuffer(doc);
+}
+
+// ─── Headers & Footers ────────────────────────────────────────────────────
+
+function createHeaderParagraph(book: Book, theme: GenericTheme): Paragraph | null {
+  if (book.lessons.length <= 0) return null;
+  const muted = theme.colors.muted ?? "9CA3AF";
+  return new Paragraph({
+    alignment: AlignmentType.RIGHT,
+    spacing: { after: 80 },
+    border: { bottom: { color: muted, space: 2, size: 1, style: BorderStyle.SINGLE } },
+    children: [
+      new TextRun({ text: book.title, size: 18, font: theme.headingFont, color: muted, italics: true }),
+    ],
+  });
+}
+
+function createFooterParagraph(theme: GenericTheme): Paragraph | null {
+  const muted = theme.colors.muted ?? "9CA3AF";
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 80 },
+    border: { top: { color: muted, space: 2, size: 1, style: BorderStyle.SINGLE } },
+    children: [
+      new TextRun({ text: "— Zan Book —", size: 18, font: theme.bodyFont, color: muted }),
+    ],
+  });
 }
