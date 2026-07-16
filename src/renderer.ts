@@ -319,6 +319,8 @@ interface ConversionContext {
   mmdcAvailable: boolean;
   /** Map of image path → resolved absolute path */
   imagePaths: Map<string, string>;
+  /** Base directory for resolving relative image paths */
+  imageBaseDir?: string;
   /** Generic theme derived from visual_profile or theme */
   theme: GenericTheme;
 }
@@ -615,20 +617,38 @@ async function createImageParagraph(
   const captionStyle = styleName ?? ctx.mapping.styles?.image_caption ?? "Caption";
   let imgData: Buffer | null = null;
 
-  // Try to resolve the image path
-  const resolvedPath = ctx.imagePaths.get(iNode.url);
-  const tryPath = resolvedPath ?? iNode.url;
-  try {
-    imgData = await readFile(tryPath);
-  } catch {
-    // Image not found
+  // Try multiple paths to find the image
+  const pathsToTry: string[] = [];
+  const baseDir = ctx.imageBaseDir;
+  if (baseDir) {
+    pathsToTry.push(join(baseDir, iNode.url));
+    pathsToTry.push(join(baseDir, "images", iNode.url));
+  }
+  pathsToTry.push(iNode.url);
+
+  for (const tryPath of pathsToTry) {
+    try {
+      imgData = await readFile(tryPath);
+      break;
+    } catch {
+      continue;
+    }
   }
 
   if (!imgData) {
-    // Fallback: render alt text
+    // Fallback: render alt text with theme styling
     return new Paragraph({
-      style: captionStyle,
-      children: [new TextRun({ text: iNode.alt ?? iNode.url, italics: true })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 200, after: 200 },
+      children: [
+        new TextRun({
+          text: iNode.alt ? `[ ${iNode.alt} ]` : `[ ${iNode.url} ]`,
+          italics: true,
+          size: 20,
+          font: ctx.theme.bodyFont,
+          color: ctx.theme.colors.muted ?? "9CA3AF",
+        }),
+      ],
     });
   }
 
@@ -640,12 +660,21 @@ async function createImageParagraph(
   ];
 
   if (iNode.alt) {
-    children.push(new TextRun({ text: `\n${iNode.alt}`, italics: true, size: 18 }));
+    children.push(
+      new TextRun({
+        text: `\n${iNode.alt}`,
+        italics: true,
+        size: 18,
+        font: ctx.theme.bodyFont,
+        color: ctx.theme.colors.muted ?? "9CA3AF",
+      }),
+    );
   }
 
   return new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: { before: 200, after: 200 },
+    style: captionStyle,
     children,
   });
 }
